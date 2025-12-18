@@ -3,7 +3,7 @@ from datetime import datetime
 from database import get_db
 from password_utils import hash_password, verify_password
 
-def signup_user(email: str, password: str):
+def signup(email: str, password: str):
     db = get_db()
     cur = db.cursor()
 
@@ -14,7 +14,6 @@ def signup_user(email: str, password: str):
     user_id = str(uuid.uuid4())
     password_hash = hash_password(password)
 
-    # TODO: Add reset token
 
     cur.execute("""
         INSERT INTO users (id, email, password_hash, is_verified, created_at)
@@ -26,7 +25,7 @@ def signup_user(email: str, password: str):
 
     return user_id
 
-def login_user(email: str, password: str):
+def login(email: str, password: str):
     db = get_db()
     cur = db.cursor()
 
