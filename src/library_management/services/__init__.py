@@ -14,8 +14,6 @@ def init_db():
         id TEXT PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
-        is_verified INTEGER DEFAULT 0,
-        reset_token TEXT,
         created_at TEXT
     )
     """)
