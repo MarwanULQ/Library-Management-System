@@ -1,12 +1,12 @@
 import sqlite3
 from pathlib import Path
 
-root = Path(__file__).resolve().parent.parent.parent.parent
+root = Path(__file__).resolve().parent.parent.parent.parent.parent
 db_dir = root / "data"
 db = db_dir / "library.db"
-schema_path = root / "src" / "library_management" / "db" / "schema.sql"
+schema_path = root / "src" / "library_management" / "services" / "database" / "schema.sql"
 
-def get_connection():
+def get_db():
     return sqlite3.connect(db)
 
 def init_db():
