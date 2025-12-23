@@ -4,7 +4,7 @@ from services.auth_services import signup, login
 router = APIRouter(prefix="/auth")
 
 @router.post("/signup")
-def signup(email: str, password: str):
+def signup_api(email: str, password: str):
     try:
         user_id = signup(email, password)
         return {"userId": user_id}
@@ -12,7 +12,7 @@ def signup(email: str, password: str):
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/login")
-def login(email: str, password: str):
+def login_api(email: str, password: str):
     try:
         user_id = login(email, password)
         return {"userId": user_id}
