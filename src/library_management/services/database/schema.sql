@@ -9,7 +9,7 @@ CREATE TABLE Book (
     isbn TEXT UNIQUE,
     publication_year INTEGER NOT NULL,
     language TEXT NOT NULL,
-    cover BLOB NOT NULL
+    cover TEXT
 );
 
 -- =====================
