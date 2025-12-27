@@ -2,10 +2,8 @@ import streamlit as st
 from pathlib import Path
 from assets.styles import apply_global_styles
 
-# ---------------- Global styles ----------------
 apply_global_styles()
 
-# ---------------- Session state ----------------
 if "menu_open" not in st.session_state:
     st.session_state.menu_open = False
 
@@ -33,6 +31,10 @@ with col2:
         placeholder="Search for title, author, ISBN, DOI, publisher, md5..."
     )
 
+    if search_query:
+        st.switch_page("pages/search.py",
+                       query_params={"query": search_query})
+
 # ---------------- CTA Buttons ----------------
 st.markdown("<div style='margin-top:30px'></div>", unsafe_allow_html=True)
 
@@ -56,6 +58,20 @@ st.markdown(
         .home-cta .stButton > button:hover {
             background-color: #AEBFD4 !important;
         }
+
+        .stButton > button {
+            font-family: inherit;
+            background-color: #BCCCDC;
+            color: #000000;
+            border: 1px solid #4b5563;
+            border-radius: 4px;
+            font-size: 18px;
+            padding: 18px 30px;
+            width: 25em;
+            margin-left: 30px;
+            font-weight: 800;
+            letter-spacing: 0.9px;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -69,6 +85,8 @@ with col2:
 
     with btn_col1:
         browse_clicked = st.button("📚 Browse Books")
+        if browse_clicked:
+            st.switch_page("pages/browse.py")
 
     with btn_col2:
         room_clicked = st.button("🏫 Room Reservation")
