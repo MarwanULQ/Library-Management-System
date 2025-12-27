@@ -44,14 +44,14 @@ class BookRead(SQLModel):
     category: List[CategoryRead] = []
 
 
-@app.get("/books", response_model=list[BookRead])
+@router.get("/books", response_model=list[BookRead])
 def list_books(session: Session = Depends(get_session)):
     statement = select(Book)
     results = session.exec(statement).all()
     return results
 
 
-@app.get("/books/{book_id}", response_model=BookRead)
+@router.get("/books/{book_id}", response_model=BookRead)
 def get_book(book_id: int, session: Session = Depends(get_session)):
     book = session.get(Book, book_id)
     if not book:
@@ -65,7 +65,7 @@ class BookCreate(SQLModel):
     language: str
     cover: str | None = None
 
-@app.post("/books", response_model=BookRead)
+@router.post("/books", response_model=BookRead)
 def create_book(data: BookCreate, session: Session = Depends(get_session)):
     book = Book.from_orm(data)
     session.add(book)
@@ -73,7 +73,7 @@ def create_book(data: BookCreate, session: Session = Depends(get_session)):
     session.refresh(book)
     return book
 
-@app.get("/books/search/all", response_model=list[BookRead])
+@router.get("/books/search/all", response_model=list[BookRead])
 def search(q: str, session: Session = Depends(get_session)):
     q = f"%{q.lower()}%"
 
@@ -96,7 +96,7 @@ class StudentRead(SQLModel):
     full_name: str
     email: str
 
-@app.get("/students/{student_id}", response_model=StudentRead)
+@router.get("/students/{student_id}", response_model=StudentRead)
 def get_student(student_id: int, session: Session = Depends(get_session)):
     student = session.get(Student, student_id)
     if not student:
@@ -107,7 +107,7 @@ class StudentCreate(SQLModel):
     full_name: str
     email: str
 
-@app.post("/students", response_model=StudentRead)
+@router.post("/students", response_model=StudentRead)
 def create_student(data: StudentCreate, session: Session = Depends(get_session)):
     student = Student.from_orm(data)
     session.add(student)
@@ -121,7 +121,7 @@ class StaffRead(SQLModel):
     email: str
     role: StaffRole
 
-@app.get("/staff/{staff_id}", response_model=StaffRead)
+@router.get("/staff/{staff_id}", response_model=StaffRead)
 def get_staff(staff_id: int, session: Session = Depends(get_session)):
     staff = session.get(Staff, staff_id)
     if not staff:
@@ -133,7 +133,7 @@ class StaffCreate(SQLModel):
     email: str
     role: StaffRole
 
-@app.post("/stadd", response_model=StaffRead)
+@router.post("/stadd", response_model=StaffRead)
 def create_staff(data: StaffCreate, session: Session = Depends(get_session)):
     staff = Staff.from_orm(data)
     session.add(staff)
@@ -147,14 +147,14 @@ class RoomRead(SQLModel):
     capacity: int
     floor: int
 
-@app.get("/rooms", response_model=list[RoomRead])
+@router.get("/rooms", response_model=list[RoomRead])
 def list_rooms(session: Session = Depends(get_session)):
     statement = select(Room)
     results = session.exec(statement).all()
     return results
 
 
-@app.get("/rooms/{room_id}", response_model=RoomRead)
+@router.get("/rooms/{room_id}", response_model=RoomRead)
 def get_room(room_id: int, session: Session = Depends(get_session)):
     room = session.get(Room, room_id)
     if not room:
@@ -172,14 +172,14 @@ class ReservationRead(SQLModel):
     start_time: datetime
     end_time: datetime 
 
-@app.get("/room_reservations", response_model=list[ReservationRead])
+@router.get("/room_reservations", response_model=list[ReservationRead])
 def list_reservations(session: Session = Depends(get_session)):
     statement = select(Room_Reservation)
     results = session.exec(statement).all()
     return results
 
 
-@app.get("/room_reservations/{reservation_id}", response_model=ReservationRead)
+@router.get("/room_reservations/{reservation_id}", response_model=ReservationRead)
 def get_reservation(reservation_id: int, session: Session = Depends(get_session)):
     reservation = session.get(Room_Reservation, reservation_id)
     if not reservation:
