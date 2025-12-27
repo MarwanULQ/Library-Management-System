@@ -27,7 +27,7 @@ def apply_global_styles():
                 text-align: center;
                 font-size: 96px;
                 font-weight: 800;
-                margin-top: 50px;
+                margin-top: 20px;
                 margin-bottom: 0;
                 text-shadow: 0px 4px 12px rgba(0,0,0,0.4);
             }
