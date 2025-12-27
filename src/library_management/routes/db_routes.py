@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from sqlmodel import SQLModel, Session, select
 from typing import Optional, List
 from sqlalchemy import func
@@ -19,7 +19,7 @@ from library_management.services.database.db import (
 )
 
 engine = init_db()
-app = FastAPI()
+router = APIRouter(prefix="/db")
 
 def get_session():
     with Session(engine) as session:
