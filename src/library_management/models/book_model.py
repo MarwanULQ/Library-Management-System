@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
-from author_model import Author
-from catergory_model import Category
+from .author_model import Author
+from .catergory_model import Category
 
 @dataclass
 class Book:
