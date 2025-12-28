@@ -3,7 +3,7 @@ from sqlmodel import SQLModel, Session, select
 from typing import Optional, List
 from sqlalchemy import func, sql
 from datetime import datetime
-from library_management.services.database.db import (
+from ..services.database.db import (
     Book,
     Authors,
     Categories,
@@ -13,7 +13,7 @@ from library_management.services.database.db import (
     StaffRole,
     Student,
     Staff,
-    Room,
+    Rooms,
     RoomStatus,
     init_db
 )
@@ -91,24 +91,21 @@ def search(q: str, session: Session = Depends(get_session)):
 
     return session.exec(statement).all()
 
-class StudentRead(SQLModel):
+class StudentModel(SQLModel):
     student_id: int
     full_name: str
     email: str
 
-@router.get("/students/{student_id}", response_model=StudentRead)
+@router.get("/students/{student_id}", response_model=StudentModel)
 def get_student(student_id: int, session: Session = Depends(get_session)):
     student = session.get(Student, student_id)
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     return student
 
-class StudentCreate(SQLModel):
-    full_name: str
-    email: str
 
-@router.post("/students", response_model=StudentRead)
-def create_student(data: StudentCreate, session: Session = Depends(get_session)):
+@router.post("/students", response_model=StudentModel)
+def create_student(data: StudentModel, session: Session = Depends(get_session)):
     student = Student.from_orm(data)
     session.add(student)
     session.commit()
@@ -149,16 +146,29 @@ class RoomRead(SQLModel):
 
 @router.get("/rooms", response_model=list[RoomRead])
 def list_rooms(session: Session = Depends(get_session)):
-    statement = select(Room)
+    statement = select(Rooms)
     results = session.exec(statement).all()
     return results
 
 
 @router.get("/rooms/{room_id}", response_model=RoomRead)
 def get_room(room_id: int, session: Session = Depends(get_session)):
-    room = session.get(Room, room_id)
+    room = session.get(Rooms, room_id)
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
+    return room
+
+class RoomCreate(SQLModel):
+    capacity: int
+    floor: int
+
+#Added the ability to create rooms for testing
+@router.post("/rooms", response_model=RoomRead)
+def create_room(data: RoomCreate, session: Session = Depends(get_session)):
+    room = Rooms.from_orm(data)
+    session.add(room)
+    session.commit()
+    session.refresh(room)
     return room
 
 class ReservationRead(SQLModel):
@@ -193,7 +203,7 @@ class ReservationCreate(SQLModel):
     end_time: datetime 
 
 
-@router.post("/room_reservation/{reservation_id}", response_model=ReservationCreate)
+@router.post("/room_reservation/", response_model=ReservationCreate)
 def create_reservation(data: ReservationCreate, session: Session = Depends(get_session)):
     reservation = Room_Reservation.from_orm(data)
     session.add(reservation)

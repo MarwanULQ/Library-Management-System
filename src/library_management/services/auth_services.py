@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
-from services.database.db import get_db
-from services.password_utils import hash_password, verify_password
+from .database.db import get_db
+from .password_utils import hash_password, verify_password
 
 def signup(email: str, password: str):
     db = get_db()
