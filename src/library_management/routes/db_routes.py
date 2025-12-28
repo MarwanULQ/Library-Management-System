@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from sqlmodel import SQLModel, Session, select
 from typing import Optional, List
-from sqlalchemy import func
+from sqlalchemy import func, sql
 from datetime import datetime
 from library_management.services.database.db import (
     Book,
@@ -133,7 +133,7 @@ class StaffCreate(SQLModel):
     email: str
     role: StaffRole
 
-@router.post("/stadd", response_model=StaffRead)
+@router.post("/staff", response_model=StaffRead)
 def create_staff(data: StaffCreate, session: Session = Depends(get_session)):
     staff = Staff.from_orm(data)
     session.add(staff)
@@ -178,10 +178,50 @@ def list_reservations(session: Session = Depends(get_session)):
     results = session.exec(statement).all()
     return results
 
-
 @router.get("/room_reservations/{reservation_id}", response_model=ReservationRead)
 def get_reservation(reservation_id: int, session: Session = Depends(get_session)):
     reservation = session.get(Room_Reservation, reservation_id)
     if not reservation:
         raise HTTPException(status_code=404, detail="Reservation not found")
     return reservation
+
+class ReservationCreate(SQLModel):
+    student_id: int
+    room_id: int
+    requested_at: datetime
+    start_time: datetime
+    end_time: datetime 
+
+
+@router.post("/room_reservation/{reservation_id}", response_model=ReservationCreate)
+def create_reservation(data: ReservationCreate, session: Session = Depends(get_session)):
+    reservation = Room_Reservation.from_orm(data)
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+    return reservation
+
+class ReservationUpdate(SQLModel):
+    status: Optional[str] = None
+    staff_id: Optional[int] = None
+    approved_at: Optional[datetime] = None
+
+@router.patch("/room_reservation/{reservation_id}", response_model=ReservationRead)
+def update_reservation(
+    reservation_id: int,
+    data: ReservationUpdate,
+    session: Session = Depends(get_session)
+):
+    reservation = session.get(Room_Reservation, reservation_id)
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+
+    update_data = data.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(reservation, key, value)
+
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+    return reservation
+
