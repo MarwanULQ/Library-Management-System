@@ -3,7 +3,7 @@ from sqlmodel import SQLModel, Session, select
 from typing import Optional, List
 from sqlalchemy import func, sql
 from datetime import datetime
-from library_management.services.database.db import (
+from ..services.database.db import (
     Book,
     Authors,
     Categories,
@@ -13,7 +13,7 @@ from library_management.services.database.db import (
     StaffRole,
     Student,
     Staff,
-    Room,
+    Rooms,
     RoomStatus,
     init_db
 )
@@ -149,14 +149,14 @@ class RoomRead(SQLModel):
 
 @router.get("/rooms", response_model=list[RoomRead])
 def list_rooms(session: Session = Depends(get_session)):
-    statement = select(Room)
+    statement = select(Rooms)
     results = session.exec(statement).all()
     return results
 
 
 @router.get("/rooms/{room_id}", response_model=RoomRead)
 def get_room(room_id: int, session: Session = Depends(get_session)):
-    room = session.get(Room, room_id)
+    room = session.get(Rooms, room_id)
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
     return room
