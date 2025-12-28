@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from services.auth_services import signup, login
+from ..services.auth_services import signup, login
 
 router = APIRouter(prefix="/auth")
 
