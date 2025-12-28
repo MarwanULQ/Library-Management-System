@@ -193,7 +193,7 @@ class Room_Reservation(SQLModel, table=True):
     student_id: int = Field(foreign_key="Student.student_id")
     staff_id: Optional[int] = Field(default=None, foreign_key="Staff.staff_id")
     room_id: int = Field(foreign_key="Rooms.room_id")
-    status: RoomStatus | None = None
+    status: RoomStatus = Field(default=RoomStatus.Pending)
     requested_at: datetime
     approved_at: Optional[datetime] = Field(default=None)
     start_time: datetime

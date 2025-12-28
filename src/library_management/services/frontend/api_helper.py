@@ -16,3 +16,8 @@ class ApiHelper:
         response = requests.post(full_url, json=data, params=query_params)
         return response
         
+    @staticmethod
+    def patch(endpoint: str, data: dict = None, query_params: dict = None):
+        full_url = f"http://{ApiHelper.url}/{endpoint}"
+        response = requests.patch(full_url, json=data, params=query_params)
+        return response

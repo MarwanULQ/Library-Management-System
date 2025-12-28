@@ -1,16 +1,17 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
 @dataclass
 class RoomReservation:
     reservation_id: int
     student_id: int
-    staff_id: int
+    staff_id: Optional[int]
     room_id: int
     status: RoomStatus
     requested_at: datetime
-    approved_at: datetime
+    approved_at: Optional[datetime]
     start_time: datetime
     end_time: datetime
 
@@ -21,11 +22,11 @@ class RoomReservation:
             student_id=data.get("student_id"),
             staff_id=data.get("staff_id"),
             room_id=data.get("room_id"),
-            status=data.get("status"),
-            requested_at=data.get("requested_at"),
-            approved_at=data.get("approved_at"),
-            start_time=data.get("start_time"),
-            end_time=data.get("end_time")
+            status=RoomStatus(data.get("status")),
+            requested_at=datetime.fromisoformat(data.get("requested_at")),
+            approved_at=datetime.fromisoformat(data.get("approved_at")) if data.get("approved_at") else None,
+            start_time=datetime.fromisoformat(data.get("start_time")),
+            end_time=datetime.fromisoformat(data.get("end_time"))
         )
     
     def to_json(self) -> dict:
@@ -34,11 +35,11 @@ class RoomReservation:
             "student_id": self.student_id,
             "staff_id": self.staff_id,
             "room_id": self.room_id,
-            "status": self.status,
-            "requested_at": self.requested_at,
-            "approved_at": self.approved_at,
-            "start_time": self.start_time,
-            "end_time": self.end_time
+            "status": self.status.value,
+            "requested_at": self.requested_at.isoformat(),
+            "approved_at": self.approved_at.isoformat() if self.approved_at else None,
+            "start_time": self.start_time.isoformat(),
+            "end_time": self.end_time.isoformat()
         }
     
 class RoomStatus(str, Enum):

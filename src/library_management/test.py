@@ -75,3 +75,61 @@ try:
     print("All rooms:", all_rooms)
 except Exception as e:
     print("Get all rooms error:", e)
+
+from datetime import datetime, timedelta
+
+from models.room_reservation_model import RoomReservation, RoomStatus
+from services.frontend.room_reservation_service import RoomReservationService
+
+
+print("\n========== ROOM RESERVATION SERVICE ==========")
+
+now = datetime.now()
+
+room_reservation = RoomReservation(
+    reservation_id=1,
+    student_id=1,
+    staff_id=1,
+    room_id=1,
+    status=RoomStatus.Pending,
+    requested_at=now,
+    approved_at=None,
+    start_time=now + timedelta(hours=1),
+    end_time=now + timedelta(hours=2),
+)
+
+# CREATE
+try:
+    created_reservation = RoomReservationService.create_room_reservation(
+        roomReservation=room_reservation
+    )
+    print("Create room reservation:", created_reservation)
+except Exception as e:
+    print("Create room reservation error:", e)
+
+# GET BY ID
+try:
+    fetched_reservation = RoomReservationService.get_room_reservation_by_Id(2
+    )
+    print("Get room reservation:", fetched_reservation)
+except Exception as e:
+    print("Get room reservation error:", e)
+
+# GET ALL
+try:
+    all_reservations = RoomReservationService.get_all_room_reservations()
+    print("All room reservations:", all_reservations)
+except Exception as e:
+    print("Get all room reservations error:", e)
+
+# UPDATE (PATCH)
+try:
+    updated_reservation = RoomReservationService.update_room_reservation(
+        roomReservationId=1,
+        status=RoomStatus.Approved,
+        staff_id=1,
+        approved_at=datetime.now()
+    )
+    print("Update room reservation:", updated_reservation)
+except Exception as e:
+    print("Update room reservation error:", e)

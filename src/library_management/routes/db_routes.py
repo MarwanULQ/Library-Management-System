@@ -203,7 +203,7 @@ class ReservationCreate(SQLModel):
     end_time: datetime 
 
 
-@router.post("/room_reservation/", response_model=ReservationCreate)
+@router.post("/room_reservation", response_model=ReservationCreate)
 def create_reservation(data: ReservationCreate, session: Session = Depends(get_session)):
     reservation = Room_Reservation.from_orm(data)
     session.add(reservation)
