@@ -1,0 +1,16 @@
+import unittest
+from services.auth_services import signup, login
+from services.database.db import init_db
+class TestAuthService(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        init_db() [cite: 2, 3, 15, 18, 20]
+    def test_1_signup_success(self):
+        user_id = signup("new_user@test.com", "pass123") [cite: 7, 8, 9, 13]
+        self.assertIsNotNone(user_id) [cite: 9, 13]
+    def test_2_signup_duplicate(self):
+        with self.assertRaises(ValueError): [cite: 9, 13]
+            signup("new_user@test.com", "pass123") [cite: 7, 8, 9, 13]
+    def test_3_login_success(self):
+        user_id = login("new_user@test.com", "pass123") [cite: 10, 11, 12, 13]
+        self.assertIsNotNone(user_id) [cite: 12, 13]
