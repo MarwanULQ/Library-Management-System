@@ -148,3 +148,12 @@ CREATE TABLE Room_Reservation (
     FOREIGN KEY (staff_id) REFERENCES Staff(staff_id)
 );
 
+-- =====================
+-- Auth Users
+-- =====================
+CREATE TABLE Users (
+    id TEXT PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TEXT
+)

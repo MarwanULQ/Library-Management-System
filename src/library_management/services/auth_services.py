@@ -7,7 +7,7 @@ def signup(email: str, password: str):
     db = get_db()
     cur = db.cursor()
 
-    cur.execute("SELECT id FROM users WHERE email=?", (email,))
+    cur.execute("SELECT id FROM Users WHERE email=?", (email,))
     if cur.fetchone():
         raise ValueError("Email already exists")
 
@@ -16,8 +16,8 @@ def signup(email: str, password: str):
 
 
     cur.execute("""
-        INSERT INTO users (id, email, password_hash, is_verified, created_at)
-        VALUES (?, ?, ?, 0, ?)
+        INSERT INTO Users (id, email, password_hash, created_at)
+        VALUES (?, ?, ?, ?)
     """, (user_id, email, password_hash, datetime.utcnow()))
 
     db.commit()
@@ -30,8 +30,8 @@ def login(email: str, password: str):
     cur = db.cursor()
 
     cur.execute("""
-        SELECT id, password_hash, is_verified
-        FROM users WHERE email=?
+        SELECT id, password_hash
+        FROM Users WHERE email=?
     """, (email,))
     user = cur.fetchone()
     db.close()
@@ -39,7 +39,7 @@ def login(email: str, password: str):
     if not user:
         raise ValueError("Invalid credentials")
 
-    user_id, password_hash, is_verified = user
+    user_id, password_hash = user
 
     if not verify_password(password, password_hash):
         raise ValueError("Invalid credentials")
