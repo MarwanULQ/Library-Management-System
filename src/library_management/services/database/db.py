@@ -35,9 +35,17 @@ def init_db():
     if not db_exist:
         with open(schema_path, "r", encoding="utf-8") as f:
             schema_sql = f.read()
+
+        statements = [
+            stmt.strip()
+            for stmt in schema_sql.split(";")
+            if stmt.strip()
+        ]
+
         with engine.begin() as conn:
-            conn.exec_driver_sql(schema_sql)
             conn.exec_driver_sql("PRAGMA foreign_keys = ON;")
+            for stmt in statements:
+                conn.exec_driver_sql(stmt)
     return engine
 
 
