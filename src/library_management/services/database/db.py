@@ -135,8 +135,8 @@ class CopyStatus(str, Enum):
 class Copy(SQLModel, table=True):
     __tablename__ = "Copy"
     copy_id: Optional[int] = Field(default=None, primary_key=True)
-    book_id: int = Field(foreign_key=Book.book_id)
-    location_id: int = Field(foreign_key=Location.location_id)
+    book_id: int = Field(foreign_key="Book.book_id")
+    location_id: int = Field(foreign_key="Location.location_id")
     status: CopyStatus
 
     loans: list["Book_Loan"] = Relationship(
@@ -154,8 +154,8 @@ class LoanStatus(str, Enum):
 class Book_Loan(SQLModel, table=True):
     __tablename__ = "Book_Loan"
     loan_id: Optional[int] = Field(default=None, primary_key=True)
-    student_id: int = Field(foreign_key=Student.student_id)
-    staff_id: Optional[int] = Field(default=None,foreign_key=Staff.staff_id)
+    student_id: int = Field(foreign_key="Student.student_id")
+    staff_id: Optional[int] = Field(default=None,foreign_key="Staff.staff_id")
     status: LoanStatus | None = None 
     created_at: datetime
     approved_at: Optional[datetime] = Field(default=None)
@@ -182,9 +182,9 @@ class RoomStatus(str, Enum):
 class Room_Reservation(SQLModel, table=True):
     __tablename__ = "Room_Reservation"
     reservation_id: Optional[int] = Field(default=None, primary_key=True)
-    student_id: int = Field(foreign_key=Student.student_id)
-    staff_id: Optional[int] = Field(default=None, foreign_key=Staff.staff_id)
-    room_id: int = Field(foreign_key=Rooms.room_id)
+    student_id: int = Field(foreign_key="Student.student_id")
+    staff_id: Optional[int] = Field(default=None, foreign_key="Staff.staff_id")
+    room_id: int = Field(foreign_key="Rooms.room_id")
     status: RoomStatus | None = None
     requested_at: datetime
     approved_at: Optional[datetime] = Field(default=None)

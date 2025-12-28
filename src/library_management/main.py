@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-from routes.auth_routes import router as auth_router
-from routes.db_routes import router as db_router
+from .routes.auth_routes import router as auth_router
+from .routes.db_routes import router as db_router
 import uvicorn
-from services.database.db import init_db
+from .services.database.db import init_db
 
 app = FastAPI(title="Library Management API")
 
