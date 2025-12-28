@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 from author_model import Author
 from catergory_model import Category
@@ -11,8 +11,8 @@ class Book:
     publication_year: int
     language: str
     cover: Optional[str]
-    authors: List[Author]=[]
-    categories: List[Category]=[]
+    authors: List[Author]=field(default_factory=list)
+    category: List[Category]=field(default_factory=list)
 
     @classmethod
     def from_json(cls, data: dict):
@@ -23,8 +23,8 @@ class Book:
             publication_year=data.get("publication_year"),
             language=data.get("language"),
             cover=data.get("cover"),
-            authors=data.get("authors", []),
-            categories=data.get("categories", [])
+            authors=[Author.from_json(a) for a in data.get("authors", [])],
+            category=[Category.from_json(c) for c in data.get("category", [])]
         )
     
     def to_json(self) -> dict:
@@ -35,6 +35,6 @@ class Book:
             "publication_year": self.publication_year,
             "language": self.language,
             "cover": self.cover,
-            "authors": [author.to_json() for author in self.authors],
-            "categories": [category.to_json() for category in self.categories]
+            "authors": [a.to_json() for a in self.authors],
+            "category": [c.to_json() for c in self.category]
         }
