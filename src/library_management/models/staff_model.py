@@ -6,7 +6,7 @@ class Staff:
     staff_id: int
     full_name: str
     email: str
-    role: str
+    role: StaffRole
 
     @classmethod
     def from_json(cls, data: dict):
@@ -14,7 +14,7 @@ class Staff:
             staff_id=data.get("staff_id"),
             full_name=data.get("full_name"),
             email=data.get("email"),
-            role=data.get("role")
+            role=StaffRole(data.get("role"))
         )
     
     def to_json(self) -> dict:
@@ -22,7 +22,7 @@ class Staff:
             "staff_id": self.staff_id,
             "full_name": self.full_name,
             "email": self.email,
-            "role": self.role
+            "role": self.role.value
         }
     
 class StaffRole(str, Enum):

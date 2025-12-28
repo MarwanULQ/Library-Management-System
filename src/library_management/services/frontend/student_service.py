@@ -20,7 +20,7 @@ class StudentService:
     def create_student(student: Student) -> Student:
 
         try:
-            response = ApiHelper.post(f"/db/students", data=Student.to_json())
+            response = ApiHelper.post(f"/db/students", data=student.to_json())
         except Exception as e:
             raise Exception(f"An error occurred while creating the student: {e}")
 
