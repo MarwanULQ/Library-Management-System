@@ -85,7 +85,7 @@ def create_book(data: BookCreate, session: Session = Depends(get_session)):
     return book
 
 @router.get("/books/search/all", response_model=list[BookRead])
-def search(q: str, session: Session = Depends(get_session)):
+def search(q: str,request: Request, session: Session = Depends(get_session)):
     q = f"%{q.lower()}%"
 
     statement = (
@@ -100,7 +100,16 @@ def search(q: str, session: Session = Depends(get_session)):
         )
     )
 
-    return session.exec(statement).all()
+    books = session.exec(statement).all()
+    base = str(request.base_url).rstrip("/")
+
+    for book in books:
+        if book.cover:
+            book.cover = f"{base}/covers/{book.cover}"
+
+    return books
+
+
 
 class StudentModel(SQLModel):
     student_id: int
