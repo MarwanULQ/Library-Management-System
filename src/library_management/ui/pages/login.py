@@ -1,6 +1,9 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent.parent))
 import streamlit as st
 from assets.styles import apply_global_styles
-
+from services.frontend.auth_service import AuthService
 
 class LoginPage:
     def __init__(self):
@@ -60,12 +63,7 @@ class LoginPage:
 
         st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
 
-        username = st.text_input("Username")
-
-        email = None
-        if st.session_state.new:
-            email = st.text_input("Email")
-
+        email = st.text_input("Email")
         password = st.text_input("Password", type="password")
 
         action = "Sign Up" if st.session_state.new else "Login"
@@ -75,24 +73,43 @@ class LoginPage:
             key="submit_signup" if st.session_state.new else "submit_login",
             use_container_width=True
         ):
-            self._handle_submit(username, email, password)
+            self._handle_submit(email, password)
 
-    # ---------- Auth Logic ----------
-    def _handle_submit(self, username, email, password):
-        if not username or not password:
+        # ---------- Auth Logic ----------
+    def _handle_submit(self, email, password):
+        if not email or not password:
             st.error("Please fill all fields correctly")
             return
 
         if st.session_state.new:
-            if not email or "@ejust.edu.eg" not in email:
+            if "@ejust.edu.eg" not in email:
                 st.error(
                     "Don't have access to the Uni Library. "
                     "You should have an E-JUST Email."
                 )
                 return
 
-        st.session_state.logged_in = True
-        st.switch_page("pages/home.py")
+        try:
+            if st.session_state.new:
+                pass
+                result = AuthService.signup(email, password)
+            else:
+                pass
+                result = AuthService.login(email, password)
+
+            # Save auth state
+            st.session_state.logged_in = True
+            st.session_state.user_id = result["userId"]
+            st.session_state.email = email
+
+            st.success("Authentication successful!")
+            st.switch_page("pages/home.py")
+
+        except ValueError as e:
+            st.error(str(e))
+        except Exception:
+            st.error("Unable to connect to authentication server.")
+
 
 
 page = LoginPage()
