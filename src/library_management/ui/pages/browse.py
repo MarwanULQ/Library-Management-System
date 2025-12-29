@@ -1,6 +1,6 @@
 import streamlit as st
-import random
 from assets.styles import apply_global_styles
+from services.frontend.books_service import BooksService
 
 apply_global_styles()
 
@@ -9,6 +9,9 @@ st.markdown(
     """
     <div class="page-title">
         <span class="accent">Y</span>Library 📚
+    </div>
+    <div class="page-subtitle">
+        Your gateway to knowledge and culture. Accessible for everyone.
     </div>
     <div class="custom-divider-center"></div>
     """,
@@ -25,50 +28,34 @@ with col2:
         placeholder="Search within books..."
     )
 
-# ---------------- Mock book data (temporary) ----------------
-# This will be replaced by backend logic later
-mock_books = [
-    {"title": "Clean Code", "author": "Robert C. Martin"},
-    {"title": "The Pragmatic Programmer", "author": "Andrew Hunt"},
-    {"title": "Introduction to Algorithms", "author": "CLRS"},
-    {"title": "Design Patterns", "author": "Gamma et al."},
-    {"title": "Structure and Interpretation of Computer Programs", "author": "Sussman"},
-    {"title": "Operating Systems: Three Easy Pieces", "author": "Remzi Arpaci-Dusseau"},
-    {"title": "Computer Networks", "author": "Andrew Tanenbaum"},
-]
+# ---------------- Fetch books ----------------
+with st.spinner("Loading books..."):
+    try:
+        books = BooksService.get_all_books()
+    except Exception as e:
+        st.error(f"Failed to load books: {e}")
+        st.stop()
 
-# Randomize order every load
-books = random.sample(mock_books, k=len(mock_books))
-
-# Optional client-side filtering
+# ---------------- Client-side filtering ----------------
 if search_query:
     q = search_query.lower()
     books = [
         b for b in books
-        if q in b["title"].lower() or q in b["author"].lower()
+        if q in b.book_name.lower()
+        or any(q in a.lower() for a in b.authors)
     ]
 
 # ---------------- Book listing ----------------
 st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
 
-if books:
-    cols_per_row = 3
-    rows = [books[i:i + cols_per_row] for i in range(0, len(books), cols_per_row)]
+st.markdown(
+    """
+    <div class="custom-divider"></div>
+    """,
+    unsafe_allow_html=True
+)
 
-    for row in rows:
-        cols = st.columns(cols_per_row)
-        for col, book in zip(cols, row):
-            with col:
-                st.markdown(
-                    f"""
-                    <div class="card">
-                        <strong>{book['title']}</strong><br>
-                        <em>{book['author']}</em>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-else:
+if not books:
     st.markdown(
         """
         <div class="card">
@@ -77,3 +64,29 @@ else:
         """,
         unsafe_allow_html=True
     )
+    st.stop()
+
+cols_per_row = 5
+rows = [books[i:i + cols_per_row] for i in range(0, len(books), cols_per_row)]
+
+for row in rows:
+    cols = st.columns(cols_per_row)
+    for col, book in zip(cols, row):
+        with col:
+            if book.cover:
+                st.image(book.cover, use_container_width=True)
+
+            if st.button(
+                book.book_name,
+                key=f"browse_title_{book.book_id}",
+                use_container_width=True
+            ):
+                st.switch_page(
+                    "pages/book.py",
+                    query_params={"id": book.book_id}
+                )
+
+            if book.authors:
+                st.caption(", ".join(book.authors))
+            else:
+                st.caption("Unknown author")
