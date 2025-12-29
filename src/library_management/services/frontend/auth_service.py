@@ -1,5 +1,6 @@
 from typing import Optional
 from services.frontend.api_helper import ApiHelper
+from models.auth_model import UserRole
 
 class AuthService:
 
@@ -7,7 +8,8 @@ class AuthService:
     def login(email: str, password: str) -> Optional[str]:
         data = {
             "email": email,
-            "password": password
+            "password": password,
+            "role": ""
         }
 
         try:
@@ -19,13 +21,16 @@ class AuthService:
         if response.status_code != 200:
             raise Exception(f"Login failed: {response.json().get('detail')}")
 
-        return response.json().get("userId")
+        result = (response.json().get("userId"), response.json().get("role"))
+
+        return result
 
     @staticmethod
-    def signup(email: str, password: str) -> Optional[str]:
+    def signup(email: str, password: str, role: UserRole) -> Optional[str]:
         data = {
             "email": email,
-            "password": password
+            "password": password,
+            "role": role.value
         }
 
         try:
@@ -36,8 +41,10 @@ class AuthService:
         if response.status_code != 200:
             print(f"Signup failed: {response.json().get('detail')}")
             return None
+        
+        result = (response.json().get("userId"), response.json().get("role"))
 
-        return response.json().get("userId")
+        return result
     
     @staticmethod
     def logout() -> bool:

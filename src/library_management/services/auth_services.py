@@ -41,7 +41,7 @@ def login(email: str, password: str):
     if not user:
         raise ValueError("Invalid credentials")
 
-    user_id, role, password_hash = user
+    user_id, password_hash, role = user
 
     if not verify_password(password, password_hash):
         raise ValueError("Invalid credentials")
