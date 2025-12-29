@@ -11,14 +11,16 @@ def signup(email: str, password: str):
     if cur.fetchone():
         raise ValueError("Email already exists")
 
-    user_id = str(uuid.uuid4())
     password_hash = hash_password(password)
 
-
     cur.execute("""
-        INSERT INTO Users (id, email, password_hash, created_at)
-        VALUES (?, ?, ?, ?)
-    """, (user_id, email, password_hash, datetime.utcnow()))
+        INSERT INTO Users (email, password_hash, created_at)
+        VALUES (?, ?, ?)
+    """, ( email, password_hash, datetime.utcnow().isoformat()))
+
+    cur.execute("SELECT id FROM Users WHERE email=?", (email,))
+
+    user_id = cur.fetchone()[0]
 
     db.commit()
     db.close()
