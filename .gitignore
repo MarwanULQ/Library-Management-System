@@ -1,22 +1,19 @@
+# ----------------------
+# Python
+# ----------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ----------------------
+# Virtual environments
+# ----------------------
 .venv/
-./data/library.db
+venv/
+env/
+
+# ----------------------
+# Database / runtime data
+# ----------------------
 data/library.db
-src/library_management/__pycache__/main.cpython-314.pyc
-src/library_management/models/__pycache__/room_model.cpython-314.pyc
-src/library_management/models/__pycache__/room_reservation_model.cpython-314.pyc
-src/library_management/models/__pycache__/staff_model.cpython-314.pyc
-src/library_management/models/__pycache__/student_model.cpython-314.pyc
-src/library_management/routes/__pycache__/auth_routes.cpython-314.pyc
-src/library_management/routes/__pycache__/db_routes.cpython-314.pyc
-src/library_management/services/database/__pycache__/db.cpython-314.pyc
-src/library_management/services/frontend/__pycache__/api_helper.cpython-314.pyc
-src/library_management/services/frontend/__pycache__/room_reservation_service.cpython-314.pyc
-src/library_management/services/frontend/__pycache__/room_service.cpython-314.pyc
-src/library_management/services/frontend/__pycache__/staff_service.cpython-314.pyc
-src/library_management/services/frontend/__pycache__/student_service.cpython-314.pyc
-src/library_management/__pycache__/main.cpython-314.pyc
-src/library_management/routes/__pycache__/__init__.cpython-314.pyc
-src/library_management/routes/__pycache__/auth_routes.cpython-314.pyc
-src/library_management/routes/__pycache__/db_routes.cpython-314.pyc
-src/library_management/services/__pycache__/auth_services.cpython-314.pyc
-src/library_management/services/database/__pycache__/db.cpython-314.pyc
+
