@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Depends, HTTPException, APIRouter
+from fastapi import FastAPI, Depends, HTTPException, APIRouter, Request
+from sqlalchemy.orm import base
 from sqlmodel import SQLModel, Session, select
 from typing import Optional, List
 from sqlalchemy import func, sql
@@ -45,17 +46,27 @@ class BookRead(SQLModel):
 
 
 @router.get("/books", response_model=list[BookRead])
-def list_books(session: Session = Depends(get_session)):
-    statement = select(Book)
-    results = session.exec(statement).all()
-    return results
+def list_books(request: Request, session: Session = Depends(get_session)):
+    base = str(request.base_url).rstrip("/")
+    books = session.exec(select(Book)).all()
+
+    for book in books:
+        if book.cover:
+            book.cover = f"{base}/covers/{book.cover}"
+    return books
 
 
 @router.get("/books/{book_id}", response_model=BookRead)
-def get_book(book_id: int, session: Session = Depends(get_session)):
+def get_book(book_id: int, request: Request, session: Session = Depends(get_session)):
     book = session.get(Book, book_id)
+    base = str(request.base_url).rstrip("/")
+
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
+
+    if book.cover:
+        book.cover = f"{base}/covers/{book.cover}"
+
     return book
 
 class BookCreate(SQLModel):
@@ -174,11 +185,11 @@ def create_room(data: RoomCreate, session: Session = Depends(get_session)):
 class ReservationRead(SQLModel):
     reservation_id: int
     student_id: int
-    staff_id: int
+    staff_id: int | None
     room_id: int
     status: RoomStatus
     requested_at: datetime
-    approved_at: datetime
+    approved_at: datetime | None
     start_time: datetime
     end_time: datetime 
 

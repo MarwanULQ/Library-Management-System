@@ -197,4 +197,4 @@ class Room_Reservation(SQLModel, table=True):
     requested_at: datetime
     approved_at: Optional[datetime] = Field(default=None)
     start_time: datetime
-    end_time: datetime 
+    end_time: datetime
