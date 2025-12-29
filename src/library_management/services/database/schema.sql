@@ -152,7 +152,7 @@ CREATE TABLE Room_Reservation (
 -- Auth Users
 -- =====================
 CREATE TABLE Users (
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     created_at TEXT
