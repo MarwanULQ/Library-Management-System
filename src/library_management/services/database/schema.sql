@@ -9,7 +9,7 @@ CREATE TABLE Book (
     isbn TEXT UNIQUE,
     publication_year INTEGER NOT NULL,
     language TEXT NOT NULL,
-    cover BLOB NOT NULL
+    cover TEXT
 );
 
 -- =====================
@@ -152,8 +152,9 @@ CREATE TABLE Room_Reservation (
 -- Auth Users
 -- =====================
 CREATE TABLE Users (
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('Student','Staff')),
     created_at TEXT
 )

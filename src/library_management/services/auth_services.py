@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime
-from services.database.db import get_db
-from services.password_utils import hash_password, verify_password
+from .database.db import get_db
+from .password_utils import hash_password, verify_password
 
-def signup(email: str, password: str):
+def signup(email: str, password: str, role: str):
     db = get_db()
     cur = db.cursor()
 
@@ -11,26 +11,28 @@ def signup(email: str, password: str):
     if cur.fetchone():
         raise ValueError("Email already exists")
 
-    user_id = str(uuid.uuid4())
     password_hash = hash_password(password)
 
-
     cur.execute("""
-        INSERT INTO Users (id, email, password_hash, created_at)
+        INSERT INTO Users (email, password_hash, role, created_at)
         VALUES (?, ?, ?, ?)
-    """, (user_id, email, password_hash, datetime.utcnow()))
+    """, ( email, password_hash, role, datetime.utcnow().isoformat()))
+
+    cur.execute("SELECT id FROM Users WHERE email=?", (email,))
+
+    user_id = cur.fetchone()[0]
 
     db.commit()
     db.close()
 
-    return user_id
+    return (user_id, role)
 
 def login(email: str, password: str):
     db = get_db()
     cur = db.cursor()
 
     cur.execute("""
-        SELECT id, password_hash
+        SELECT id, password_hash, role
         FROM Users WHERE email=?
     """, (email,))
     user = cur.fetchone()
@@ -39,9 +41,9 @@ def login(email: str, password: str):
     if not user:
         raise ValueError("Invalid credentials")
 
-    user_id, password_hash = user
+    user_id, password_hash, role = user
 
     if not verify_password(password, password_hash):
         raise ValueError("Invalid credentials")
     
-    return user_id
+    return (user_id, role)

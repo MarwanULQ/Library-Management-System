@@ -1,2 +1,19 @@
+# ----------------------
+# Python
+# ----------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ----------------------
+# Virtual environments
+# ----------------------
 .venv/
-./data/library.db
+venv/
+env/
+
+# ----------------------
+# Database / runtime data
+# ----------------------
+data/library.db
+

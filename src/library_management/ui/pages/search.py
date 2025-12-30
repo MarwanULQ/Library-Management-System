@@ -1,61 +1,27 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
 import streamlit as st
 from assets.styles import apply_global_styles
+from ui.components.header import Header
+from ui.components.book_card_clickable import ClickableBookCard
+from ui.components.search_page_search_bar import SearchPageSearchBar
+from ui.components.book_grid import BookGrid
+from services.frontend.books_service import BooksService
 
 apply_global_styles()
 
-# ---------------- Read query from Home ----------------
+# Read query from URL
 query = st.query_params.get("query", "")
 
-# ---------------- Header ----------------
-st.markdown(
-    """
-    <div class="page-title">
-        <span class="accent">Y</span>Library 📚
-    </div>
-    <div class="custom-divider-center"></div>
-    """,
-    unsafe_allow_html=True
-)
+Header().render()
+SearchPageSearchBar(query).render()
 
-# ---------------- Search bar ----------------
-st.markdown("<div style='margin-top:5px'></div>", unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns([1, 3, 1])
-with col2:
-    search_query = st.text_input(
-        "",
-        value=query,
-        placeholder="Search for title, author, ISBN, DOI, publisher, md5..."
-    )
-
-    if search_query and search_query != query:
-        st.switch_page(
-            "pages/search.py",
-            query_params={"query": search_query}
-        )
-
-# ---------------- Results ----------------
 st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
 
-if query:
-    st.markdown(
-        f"""
-        <h2>Results for: <em>{query}</em></h2>
-        <div class="custom-divider"></div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # Placeholder for search results
-    st.markdown(
-        """
-        <div class="card">
-            Search results will appear here.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-else:
+if not query:
     st.markdown(
         """
         <div class="card">
@@ -64,3 +30,25 @@ else:
         """,
         unsafe_allow_html=True
     )
+    st.stop()
+
+st.markdown(
+    f"""
+    <h2>Results for: <em>{query}</em></h2>
+    <div class="custom-divider"></div>
+    """,
+    unsafe_allow_html=True
+)
+
+with st.spinner("Searching books..."):
+    try:
+        books = BooksService.search_books(query)
+    except Exception as e:
+        st.error(f"Search failed: {e}")
+        st.stop()
+
+BookGrid(
+    books,
+    card_cls=ClickableBookCard,
+    key_prefix="search"
+).render()
