@@ -48,3 +48,33 @@ class RoomStatus(str, Enum):
     Rejected = "Rejected"
     Active = "Active"
     Finished = "Finished"
+
+@dataclass
+class ReservationCreateRequest():
+    student_id: int
+    room_id: int
+    requested_at: datetime
+    start_time: datetime
+    end_time: datetime 
+
+    def to_json(self) -> dict:
+        return {
+            "student_id": self.student_id,
+            "room_id": self.room_id,
+            "requested_at": self.requested_at.isoformat(),
+            "start_time": self.start_time.isoformat(),
+            "end_time": self.end_time.isoformat()
+        }
+    
+@dataclass
+class ReservationUpdateRequest():
+    status: Optional[str] = None
+    staff_id: Optional[int] = None
+    approved_at: Optional[datetime] = None
+
+    def to_json(self) -> dict:
+        return {
+            "status": self.status,
+            "staff_id": self.staff_id,
+            "approved_at": self.approved_at.isoformat() if self.approved_at else None
+        }
