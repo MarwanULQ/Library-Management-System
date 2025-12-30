@@ -1,13 +1,11 @@
-import streamlit as st
-from ui.components.base import BaseComponent
+from ui.components.base_search_bar import BaseSearchBar
 
-class BrowseSearchBar(BaseComponent):
-    def render(self):
-        st.markdown("<div style='margin-top:10px'></div>", unsafe_allow_html=True)
+class BrowseSearchBar(BaseSearchBar):
+    def __init__(self):
+        super().__init__(
+            placeholder="Search within books..."
+        )
+        self.value = ""
 
-        _, col2, _ = st.columns([1, 3, 1])
-        with col2:
-            return st.text_input(
-                "",
-                placeholder="Search within books..."
-            )
+    def on_change(self, value: str):
+        self.value = value

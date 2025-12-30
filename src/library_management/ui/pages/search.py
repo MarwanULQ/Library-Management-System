@@ -1,41 +1,24 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
 import streamlit as st
 from assets.styles import apply_global_styles
+from ui.components.header import Header
+from ui.components.book_card_clickable import ClickableBookCard
+from ui.components.search_page_search_bar import SearchPageSearchBar
+from ui.components.book_grid import BookGrid
 from services.frontend.books_service import BooksService
 
 apply_global_styles()
 
-# ---------------- Read query from Home ----------------
+# Read query from URL
 query = st.query_params.get("query", "")
 
-# ---------------- Header ----------------
-st.markdown(
-    """
-    <div class="page-title">
-        <span class="accent">Y</span>Library 📚
-    </div>
-    <div class="custom-divider-center"></div>
-    """,
-    unsafe_allow_html=True
-)
+Header().render()
+SearchPageSearchBar(query).render()
 
-# ---------------- Search bar ----------------
-st.markdown("<div style='margin-top:5px'></div>", unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns([1, 3, 1])
-with col2:
-    search_query = st.text_input(
-        "",
-        value=query,
-        placeholder="Search for title, author, ISBN, DOI, publisher, md5..."
-    )
-
-    if search_query and search_query != query:
-        st.switch_page(
-            "pages/search.py",
-            query_params={"query": search_query}
-        )
-
-# ---------------- Results ----------------
 st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
 
 if not query:
@@ -64,39 +47,8 @@ with st.spinner("Searching books..."):
         st.error(f"Search failed: {e}")
         st.stop()
 
-if not books:
-    st.markdown(
-        """
-        <div class="card">
-            No books found.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    st.stop()
-
-
-cols_per_row = 5
-rows = [books[i:i + cols_per_row] for i in range(0, len(books), cols_per_row)]
-
-for row in rows:
-    cols = st.columns(cols_per_row)
-    for col, book in zip(cols, row):
-        with col:
-            if book.cover:
-                st.image(book.cover, use_container_width=True)
-
-
-            if st.button(
-                book.book_name,
-                key=f"search_title_{book.book_id}",
-                use_container_width=True
-            ):
-                st.switch_page(
-                    "pages/book.py",
-                    query_params={"id": book.book_id}
-                )
-            if book.authors:
-                st.caption(", ".join(book.authors))
-            else:
-                st.caption("Unknown author")
+BookGrid(
+    books,
+    card_cls=ClickableBookCard,
+    key_prefix="search"
+).render()
