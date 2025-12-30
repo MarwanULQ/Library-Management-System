@@ -37,7 +37,9 @@ CREATE TABLE Staff (
     staff_id INTEGER PRIMARY KEY AUTOINCREMENT,
     full_name TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('Librarian', 'Admin')),
-    email TEXT NOT NULL UNIQUE
+    email TEXT NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL UNIQUE,
+    FOREIGN KEY (user_id) REFERENCES Users(id)
 );
 
 -- =====================
@@ -46,7 +48,9 @@ CREATE TABLE Staff (
 CREATE TABLE Student (
     student_id INTEGER PRIMARY KEY AUTOINCREMENT,
     full_name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE
+    email TEXT NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL UNIQUE,
+    FOREIGN KEY (user_id) REFERENCES Users(id)
 );
 
 -- =====================
@@ -137,5 +141,7 @@ CREATE TABLE Users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    created_at TEXT
+    created_at TEXT,
+    user_role TEXT NOT NULL
+        CHECK (status IN ('Student', 'Staff'))
 )
