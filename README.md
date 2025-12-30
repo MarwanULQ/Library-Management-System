@@ -57,6 +57,7 @@ src/library_management/
 ├── routes/                # API routes
 ├── services/              # Business logic & API helpers
 ├── ui/                    # Streamlit frontend
+```
 
 ### 1. Clone the repository
 
@@ -91,7 +92,7 @@ pip install -r requirements.txt
 pip freeze > requirements.txt
 ```
 ### 4. Run the application
-## For linux
+## For Linux/macOS
 ```bash
 chmod +x launch.sh
 ./launch.sh
