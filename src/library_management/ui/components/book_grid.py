@@ -2,11 +2,11 @@ import streamlit as st
 from ui.components.base import BaseComponent
 
 class BookGrid(BaseComponent):
-    def __init__(self, books, cols_per_row=5, clickable=False, key_prefix="book"):
+    def __init__(self, books, card_cls, cols_per_row=5, **card_kwargs):
         self.books = books
+        self.card_cls = card_cls
         self.cols_per_row = cols_per_row
-        self.clickable = clickable
-        self.key_prefix = key_prefix
+        self.card_kwargs = card_kwargs
 
     def render(self):
         if not self.books:
@@ -22,21 +22,4 @@ class BookGrid(BaseComponent):
             cols = st.columns(self.cols_per_row)
             for col, book in zip(cols, row):
                 with col:
-                    if book.cover:
-                        st.image(book.cover, use_container_width=True)
-
-                    if self.clickable:
-                        if st.button(
-                            book.book_name,
-                            key=f"{self.key_prefix}_{book.book_id}",
-                            use_container_width=True
-                        ):
-                            st.switch_page(
-                                "pages/book.py",
-                                query_params={"id": book.book_id}
-                            )
-
-                        if book.authors:
-                            st.caption(", ".join(book.authors))
-                        else:
-                            st.caption("Unknown author")
+                    self.card_cls(book, **self.card_kwargs).render()
