@@ -106,7 +106,7 @@ chmod +x launch.sh
 
 | Name | GitHub | Contribution |
 | ---- | ------ | ------------ |
-| **Marwan** | `MarwanULQ` | Frontend architecture & UI |
+| **Marwan** | `MarwanULQ` | Frontend & UI |
 | **Youssef** | `zainstark` | Frontend development |
 | **Amr** | `Aki3006` | Backend integration & authentication |
 | **Ahmed** | `AhmedElshentenawy` | Database design & backend |
