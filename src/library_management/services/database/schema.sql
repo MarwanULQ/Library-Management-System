@@ -125,7 +125,7 @@ CREATE TABLE Room_Reservation (
     status TEXT NOT NULL DEFAULT 'Pending'
         CHECK (status IN ('Pending','Approved','Rejected','Active','Finished')),
     slot TEXT NOT NULL
-        CHECK (status IN ('Morning', 'Noon', 'Evening')),
+        CHECK (slot IN ('Morning', 'Noon', 'Evening')),
     date TEXT NOT NULL,
     requested_at TEXT NOT NULL,
     approved_at TEXT,
@@ -142,6 +142,5 @@ CREATE TABLE Users (
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     created_at TEXT,
-    user_role TEXT NOT NULL
-        CHECK (status IN ('Student', 'Staff'))
+    role TEXT NOT NULL CHECK (role IN ('Student','Staff')),
 )
