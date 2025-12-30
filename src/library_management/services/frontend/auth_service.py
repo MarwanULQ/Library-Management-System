@@ -5,11 +5,11 @@ from models.auth_model import UserRole
 class AuthService:
 
     @staticmethod
-    def login(email: str, password: str) -> Optional[str]:
+    def login(email: str, password: str):
         data = {
             "email": email,
             "password": password,
-            "role": ""
+            "role": ""  # Role is not needed for login
         }
 
         try:
@@ -21,16 +21,14 @@ class AuthService:
         if response.status_code != 200:
             raise Exception(f"Login failed: {response.json().get('detail')}")
 
-        result = (response.json().get("userId"), response.json().get("role"))
-
-        return result
+        return response.json().get("userId"), response.json().get("role")
 
     @staticmethod
-    def signup(email: str, password: str, role: UserRole) -> Optional[str]:
+    def signup(email: str, password: str):
         data = {
             "email": email,
             "password": password,
-            "role": role.value
+            "role": UserRole.STUDENT.value  # Default role as Student
         }
 
         try:
@@ -41,13 +39,6 @@ class AuthService:
         if response.status_code != 200:
             print(f"Signup failed: {response.json().get('detail')}")
             return None
-        
-        result = (response.json().get("userId"), response.json().get("role"))
 
-        return result
-    
-    @staticmethod
-    def logout() -> bool:
-        # TODO: Implement logout functionality if needed
-        return True
+        return response.json().get("userId"), response.json().get("role")
     
