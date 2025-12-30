@@ -1,34 +1,43 @@
-import streamlit as st
 import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
+import streamlit as st
 from assets.styles import apply_global_styles
+from services.frontend.books_service import BooksService
+from services.cache_helper import Cache
 from ui.components.header import Header
 from ui.components.browse_search_bar import BrowseSearchBar
-from ui.components.book_card_clickable import ClickableBookCard
 from ui.components.book_grid import BookGrid
-from services.frontend.books_service import BooksService
+from ui.components.book_card_clickable import ClickableBookCard
 
 apply_global_styles()
 
 Header().render()
 
-# Local search
+# ---------------- Cache ----------------
+cache = Cache()
+CACHE_KEY = "all_books"
+
+# ---------------- Search bar ----------------
 search_bar = BrowseSearchBar()
 search_bar.render()
 query = search_bar.value
 
-# Fetch all books
+# ---------------- Fetch books (cached) ----------------
 with st.spinner("Loading books..."):
-    try:
-        books = BooksService.get_all_books()
-    except Exception as e:
-        st.error(f"Failed to load books: {e}")
-        st.stop()
+    books = cache.get(CACHE_KEY)
 
-# Client-side filtering
+    if books is None:
+        try:
+            books = BooksService.get_all_books()
+            cache.set(CACHE_KEY, books)
+        except Exception as e:
+            st.error(f"Failed to load books: {e}")
+            st.stop()
+
+# ---------------- Client-side filtering ----------------
 if query:
     q = query.lower()
     books = [
