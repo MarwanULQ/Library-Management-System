@@ -66,15 +66,8 @@ class ReservationCreateRequest():
             "end_time": self.end_time.isoformat()
         }
     
-@dataclass
-class ReservationUpdateRequest():
-    status: Optional[str] = None
-    staff_id: Optional[int] = None
-    approved_at: Optional[datetime] = None
-
-    def to_json(self) -> dict:
-        return {
-            "status": self.status,
-            "staff_id": self.staff_id,
-            "approved_at": self.approved_at.isoformat() if self.approved_at else None
-        }
+class ReservationUpdateRequestType(Enum):
+    Approve = "approve"
+    Reject = "reject"
+    Activate = "activate"
+    Complete = "complete"
