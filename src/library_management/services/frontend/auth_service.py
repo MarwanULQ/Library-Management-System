@@ -5,7 +5,7 @@ from models.auth_model import UserRole
 class AuthService:
 
     @staticmethod
-    def login(email: str, password: str) -> Optional[str]:
+    def login(email: str, password: str):
         data = {
             "email": email,
             "password": password,
@@ -26,7 +26,7 @@ class AuthService:
         return result
 
     @staticmethod
-    def signup(email: str, password: str, role: UserRole) -> Optional[str]:
+    def signup(email: str, password: str, role: UserRole):
         data = {
             "email": email,
             "password": password,

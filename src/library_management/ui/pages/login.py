@@ -3,9 +3,10 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 import streamlit as st
 from assets.styles import apply_global_styles
+from assets.page import Page
 from services.frontend.auth_service import AuthService
 
-class LoginPage:
+class LoginPage(Page):
     def __init__(self):
         self._init_session_state()
 
