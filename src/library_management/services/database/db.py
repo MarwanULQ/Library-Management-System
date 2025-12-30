@@ -132,23 +132,16 @@ class Student(SQLModel, table=True):
 class CopyStatus(str, Enum):
     Available = "Available"
     Loaned = "Loaned"
-    Lost = "Lost"
-    Damaged = "Damaged"
 
 class Copy(SQLModel, table=True):
     __tablename__ = "Copy"
     copy_id: Optional[int] = Field(default=None, primary_key=True)
     book_id: int = Field(foreign_key="Book.book_id")
     status: CopyStatus
-
-    loans: list["Book_Loan"] = Relationship(
-        back_populates="copies",
-        link_model=Copy_Loan
-    )
+    loans: list["Book_Loan"] = Relationship(back_populates="copy")
 
 class LoanStatus(str, Enum):
     Pending = "Pending"
-    Approved = "Approved"
     Rejected = "Rejected"
     Active = "Active"
     Returned = "Returned"
@@ -157,16 +150,14 @@ class Book_Loan(SQLModel, table=True):
     __tablename__ = "Book_Loan"
     loan_id: Optional[int] = Field(default=None, primary_key=True)
     student_id: int = Field(foreign_key="Student.student_id")
+    copy_id: int = Field(foreign_key="Copy.copy_id")
     staff_id: Optional[int] = Field(default=None,foreign_key="Staff.staff_id")
-    status: LoanStatus | None = None 
+    status: Optional[LoanStatus] = Field(default="Pending")
     created_at: datetime
     approved_at: Optional[datetime] = Field(default=None)
     returned_at: Optional[datetime] = Field(default=None)
+    copy: "Copy" = Relationship(back_populates="loans")
 
-    copies: list["Copy"] = Relationship(
-        back_populates="loans",
-        link_model=Copy_Loan
-    )
 
 class Rooms(SQLModel, table=True):
     __tablename__ = "Rooms"

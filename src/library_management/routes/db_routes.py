@@ -1,15 +1,17 @@
 from fastapi import  Depends, HTTPException, APIRouter, Request
-from sqlalchemy.orm import base
 from sqlmodel import SQLModel, Session, select
 from typing import Optional, List
-from sqlalchemy import Select, func
+from sqlalchemy import func
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from ..services.database.db import (
     Book,
     Authors,
     Categories,
     Copy,
     Book_Loan,
+    LoanStatus,
+    CopyStatus,
     Room_Reservation,
     StaffRole,
     Student,
@@ -29,12 +31,6 @@ def get_session():
 class AuthorRead(SQLModel):
     author_id: int
     full_name: str
-
-class AuthorCreate(SQLModel):
-    full_name: str
-
-class CategoryCreate(SQLModel):
-    category_name: str
 
 class CategoryRead(SQLModel):
     category_id: int
@@ -59,8 +55,8 @@ class BookCreate(SQLModel):
 
 
 @router.post("/authors", response_model=AuthorRead)
-def create_author(name: AuthorCreate, session: Session = Depends(get_session)):
-    author = Authors.model_validate(name)
+def create_author(name: str, session: Session = Depends(get_session)):
+    author = Authors(full_name=name) 
     session.add(author)
     session.commit()
     session.refresh(author)
@@ -73,8 +69,8 @@ def list_authors(session: Session = Depends(get_session)):
 
 
 @router.post("/categories", response_model=CategoryRead)
-def create_category(name: CategoryCreate, session: Session = Depends(get_session)):
-    category = Categories.model_validate(name)
+def create_category(name: str, session: Session = Depends(get_session)):
+    category = Categories(category_name=name)
     session.add(category)
     session.commit()
     session.refresh(category)
@@ -84,6 +80,7 @@ def create_category(name: CategoryCreate, session: Session = Depends(get_session
 def list_categories(session: Session=Depends(get_session)):
     categories =  session.exec(select(Categories)).all()
     return categories
+
 
 @router.get("/books", response_model=list[BookRead])
 def list_books(request: Request, session: Session = Depends(get_session)):
@@ -146,10 +143,10 @@ def search(q: str,request: Request, session: Session = Depends(get_session)):
 def add_author_to_book(book_id: int, author_id: int, session: Session=Depends(get_session)):
     book = session.get(Book, book_id)
     if not book:
-        raise Exception("Error 404: Book not found")
+        raise HTTPException("Error 404: Book not found")
     author = session.get(Authors, author_id)
     if not author:
-        raise Exception("Error 404: Author not found")
+        raise HTTPException("Error 404: Author not found")
 
     if author in book.authors:
         return {"Status: author already exists in book"}
@@ -164,10 +161,10 @@ def add_author_to_book(book_id: int, author_id: int, session: Session=Depends(ge
 def add_category_to_book(book_id: int, category_id: int, session: Session=Depends(get_session)):
     book = session.get(Book, book_id)
     if not book:
-        raise Exception("Error 404: Book not found")
+        raise HTTPException("Error 404: Book not found")
     category = session.get(Categories, category_id)
     if not category:
-        raise Exception("Error 404: Category not found")
+        raise HTTPException("Error 404: Category not found")
 
     if category in book.category:
         return {"Status: Category already in book"}
@@ -177,6 +174,130 @@ def add_category_to_book(book_id: int, category_id: int, session: Session=Depend
     session.commit()
     session.refresh(book)
     return {"Operation Successful: Category added to book"}
+
+@router.post("/copies")
+def create_copy(book_id: int, session: Session = Depends(get_session)):
+    copy = Copy(book_id=book_id, status=CopyStatus.Available)
+    session.add(copy)
+    session.commit()
+    session.refresh(copy)
+    return copy
+
+class LoanRead(SQLModel):
+    loan_id: int
+    student_id: int
+    copy_id: int
+    staff_id: int | None
+    status: LoanStatus 
+    created_at: datetime
+    approved_at: datetime | None
+    returned_at: datetime | None
+
+@router.get("/loans", response_model=list[LoanRead])
+def list_loans(session: Session = Depends(get_session)):
+    loans = session.exec(select(Book_Loan)).all()
+    return loans
+
+@router.post("/loans", response_model=LoanRead)
+def create_loan(book_id: int, student_id: int, session: Session = Depends(get_session)):
+    copy = session.exec(select(Copy).where(
+        (Copy.book_id == book_id) &
+        (Copy.status == "Available")
+    )).first()
+
+    if not copy:
+        raise HTTPException("Error 400: No Available copies")
+    #copy.status = "Loaned"
+    #session.add(copy)
+
+    loan = Book_Loan(
+        student_id= student_id,
+        copy_id= copy.copy_id,
+        created_at=datetime.now(ZoneInfo("Africa/Cairo"))
+    )
+    session.add(loan)
+
+    session.commit()
+    session.refresh(loan)
+
+    return loan
+
+
+@router.patch("/loans/{loan_id}/accept", response_model=LoanRead)
+def accept_loan(loan_id: int, session: Session = Depends(get_session)):
+    loan = session.get(Book_Loan, loan_id)
+
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+
+    if loan.status != LoanStatus.Pending:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot accept a loan in '{loan.status}' state"
+        )
+
+    copy = session.get(Copy, loan.copy_id)
+    if copy.status != CopyStatus.Available:
+        raise HTTPException(
+            status_code=409,
+            detail="Copy is no longer available"
+        )
+
+    # update states
+    loan.status = LoanStatus.Active
+    loan.approved_at = datetime.now(ZoneInfo("Africa/Cairo"))
+    copy.status = CopyStatus.Loaned
+
+    session.add_all([loan, copy])
+    session.commit()
+    session.refresh(loan)
+
+    return loan
+
+@router.patch("/loans/{loan_id}/reject", response_model=LoanRead)
+def reject_loan(loan_id: int, session: Session = Depends(get_session)):
+    loan = session.get(Book_Loan, loan_id)
+
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+
+    if loan.status != LoanStatus.Pending:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot reject a loan in '{loan.status}' state"
+        )
+
+    loan.status = LoanStatus.Rejected
+    session.add(loan)
+    session.commit()
+    session.refresh(loan)
+
+    return loan
+
+@router.patch("/loans/{loan_id}/return", response_model=LoanRead)
+def return_loan(loan_id: int, session: Session = Depends(get_session)):
+    loan = session.get(Book_Loan, loan_id)
+
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+
+    if loan.status != LoanStatus.Active:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot reject a loan in '{loan.status}' state"
+        )
+
+    copy = session.get(Copy, loan.copy_id)
+
+    loan.status = LoanStatus.Returned
+    copy.status = CopyStatus.Available
+
+    session.add_all([loan, copy])
+    session.commit()
+    session.refresh(loan)
+    return loan
+    
+
 
 class StudentModel(SQLModel):
     student_id: int
