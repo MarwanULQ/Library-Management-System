@@ -1,7 +1,8 @@
+from ui.components.book_grid import BookGrid
+from ui.components.book_card_image import ImageOnlyBookCard
+from services.frontend.books_service import BooksService
 import streamlit as st
 from ui.components.base import BaseComponent
-from ui.components.book_grid import BookGrid
-from services.frontend.books_service import BooksService
 
 class FeaturedBooks(BaseComponent):
     def render(self):
@@ -22,4 +23,7 @@ class FeaturedBooks(BaseComponent):
                 st.error(f"Failed to load books: {e}")
                 return
 
-        BookGrid(books).render()
+        BookGrid(
+            books,
+            card_cls=ImageOnlyBookCard
+        ).render()
