@@ -25,6 +25,7 @@ class AuthController:
             st.session_state.logged_in = True
             st.session_state.user_id = result[0]
             st.session_state.email = email
+            st.session_state.student_id = email.split("@")[0].split(".")[1] if result[1] != "Staff" else None
 
             st.success("Authentication successful!")
             st.switch_page("pages/home.py")
