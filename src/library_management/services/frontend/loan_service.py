@@ -8,7 +8,7 @@ class LoanService:
     def get_loans() -> list[Loan]:
         
         try:
-            response = ApiHelper.get(f"/loans")
+            response = ApiHelper.get(f"/db/loans")
         except Exception as e:
             raise Exception(f"Failed to fetch loan: {e}")
 
@@ -24,7 +24,7 @@ class LoanService:
             "book_id": book_id}
         
         try:
-            response = ApiHelper.post("/loans", data=data)
+            response = ApiHelper.post("/db/loans", data=data)
         except Exception as e:
             raise Exception(f"Failed to create loan: {e}")  
         
@@ -36,7 +36,7 @@ class LoanService:
     @staticmethod
     def loan_request(loan_id: int, request: LoanRequestType) -> Loan:
         try:
-            response = ApiHelper.patch(f"/loans/{loan_id}/{request.value}")
+            response = ApiHelper.patch(f"/db/loans/{loan_id}/{request.value}")
         except Exception as e:
             raise Exception(f"Failed to {request.value} loan: {e}")  
         
