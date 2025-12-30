@@ -1,11 +1,11 @@
 import streamlit as st
+import sys
 from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent.parent))
 from assets.styles import apply_global_styles
+from services.frontend.books_service import BooksService
 
 apply_global_styles()
-
-if "menu_open" not in st.session_state:
-    st.session_state.menu_open = False
 
 # ---------------- Header ----------------
 st.markdown(
@@ -35,10 +35,8 @@ with col2:
         st.switch_page("pages/search.py",
                        query_params={"query": search_query})
 
-# ---------------- CTA Buttons ----------------
 st.markdown("<div style='margin-top:30px'></div>", unsafe_allow_html=True)
 
-# Home-only CTA override (keeps original wide buttons)
 st.markdown(
     """
     <style>
@@ -96,8 +94,6 @@ with col2:
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------- Featured Books ----------------
-COVERS_DIR = Path(__file__).resolve().parents[1] / "assets" / "covers"
-
 st.markdown(
     """
     <h2 style="text-align:left; font-family: inherit;">
@@ -108,13 +104,28 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-covers = sorted(COVERS_DIR.glob("*.jpg"), reverse=True)
+with st.spinner("Loading books..."):
+    try:
+        books = BooksService.get_all_books()
+    except Exception as e:
+        st.error(f"Failed to load books: {e}")
+        books = []
 
-cols_per_row = 5
-rows = [covers[i:i + cols_per_row] for i in range(0, len(covers), cols_per_row)]
+if not books:
+    st.info("📭 No books available yet.")
+else:
+    cols_per_row = 5
+    rows = [books[i:i + cols_per_row] for i in range(0, len(books), cols_per_row)]
 
-for row in rows:
-    cols = st.columns(cols_per_row)
-    for col, cover in zip(cols, row):
-        with col:
-            st.image(cover, use_container_width=True)
+    for row in rows:
+        cols = st.columns(cols_per_row)
+        for col, book in zip(cols, row):
+            with col:
+                if book.cover:
+                    st.image(book.cover, use_container_width=True)
+                else:
+                    st.image(
+                        Path(__file__).resolve().parents[1]
+                        / "assets" / "covers" / "1.jpg",
+                        use_container_width=True
+                    )

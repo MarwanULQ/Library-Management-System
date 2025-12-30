@@ -1,33 +1,36 @@
 import streamlit as st
-from pathlib import Path
 from assets.styles import apply_global_styles
+from services.frontend.books_service import BooksService
 
 apply_global_styles()
 
-# ---------------- Mock book data ----------------
-book = {
-    "title": "Berserk, Vol. 1",
-    "author": "Kentaro Miura",
-    "year": 1990,
-    "publisher": "Hakusensha",
-    "isbn": "9784592134010",
-    "language": "Japanese",
-    "pages": 224,
-    "description": (
-        "Berserk is a dark fantasy manga that follows Guts, a lone mercenary, "
-        "as he struggles against fate, demons, and his own inner darkness. "
-        "Renowned for its detailed artwork, brutal themes, and philosophical depth."
-    ),
-    "cover": "5.jpg",
-}
+# ---------------- Read book_id ----------------
+book_id = st.query_params.get("id")
 
-# ---------------- Borrow state (mock) ----------------
-if "borrowed" not in st.session_state:
-    st.session_state.borrowed = False
+if not book_id:
+    st.error("No book selected.")
+    st.stop()
 
-# ---------------- Resolve cover path ----------------
-COVERS_DIR = Path(__file__).resolve().parents[1] / "assets" / "covers"
-cover_path = COVERS_DIR / book["cover"]
+try:
+    book_id = int(book_id)
+except ValueError:
+    st.error("Invalid book ID.")
+    st.stop()
+
+# ---------------- Fetch book ----------------
+with st.spinner("Loading book..."):
+    try:
+        book = BooksService.get_book_by_id(book_id)
+    except Exception as e:
+        st.error(f"Failed to load book: {e}")
+        st.stop()
+
+# ---------------- Borrow state (mock for now) ----------------
+borrow_key = f"borrowed_{book.book_id}"
+if borrow_key not in st.session_state:
+    st.session_state[borrow_key] = False
+
+borrowed_text = "Yes" if st.session_state[borrow_key] else "No"
 
 # ---------------- Header ----------------
 st.markdown(
@@ -47,8 +50,10 @@ left, right = st.columns([1, 2], gap="large")
 
 # ---- Cover (left) ----
 with left:
-    if cover_path.exists():
-        st.image(cover_path, use_container_width=True)
+    if isinstance(book.cover, str) and (
+        book.cover.startswith("http://") or book.cover.startswith("https://")
+    ):
+        st.image(book.cover, use_container_width=True)
     else:
         st.markdown(
             """
@@ -61,33 +66,29 @@ with left:
 
 # ---- Metadata (right) ----
 with right:
-    borrowed_text = "Yes" if st.session_state.borrowed else "No"
-
     st.markdown(
         f"""
-        <h1 style="margin-bottom:10px;">{book['title']}</h1>
-        <h3 style="margin-top:0; font-style:italic;">{book['author']}</h3>
+        <h1 style="margin-bottom:10px;">{book.book_name}</h1>
+        <h3 style="margin-top:0; font-style:italic;">
+            {", ".join(book.authors) if book.authors else "Unknown author"}
+        </h3>
 
         <div class="custom-divider"></div>
 
-        <p><strong>Year:</strong> {book['year']}</p>
-        <p><strong>Publisher:</strong> {book['publisher']}</p>
-        <p><strong>ISBN:</strong> {book['isbn']}</p>
-        <p><strong>Language:</strong> {book['language']}</p>
-        <p><strong>Pages:</strong> {book['pages']}</p>
+        <p><strong>Publication year:</strong> {book.publication_year}</p>
+        <p><strong>ISBN:</strong> {book.isbn}</p>
+        <p><strong>Language:</strong> {book.language}</p>
         <p><strong>Borrowed:</strong> {borrowed_text}</p>
 
         <div class="custom-divider"></div>
-
-        <p>{book['description']}</p>
         """,
         unsafe_allow_html=True
     )
 
-    # ---- Borrow button ----
-    if not st.session_state.borrowed:
+    # ---- Borrow button (still mock state) ----
+    if not st.session_state[borrow_key]:
         if st.button("📥 Borrow Book"):
-            st.session_state.borrowed = True
+            st.session_state[borrow_key] = True
             st.rerun()
     else:
         st.button("✅ Already Borrowed", disabled=True)
