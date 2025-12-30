@@ -1,79 +1,47 @@
 import streamlit as st
-import random
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
 from assets.styles import apply_global_styles
+from ui.components.header import Header
+from ui.components.browse_search_bar import BrowseSearchBar
+from ui.components.book_card_clickable import ClickableBookCard
+from ui.components.book_grid import BookGrid
+from services.frontend.books_service import BooksService
 
 apply_global_styles()
 
-# ---------------- Header ----------------
-st.markdown(
-    """
-    <div class="page-title">
-        <span class="accent">Y</span>Library 📚
-    </div>
-    <div class="custom-divider-center"></div>
-    """,
-    unsafe_allow_html=True
-)
+Header().render()
 
-# ---------------- Search bar ----------------
-st.markdown("<div style='margin-top:10px'></div>", unsafe_allow_html=True)
+# Local search
+search_bar = BrowseSearchBar()
+search_bar.render()
+query = search_bar.value
 
-col1, col2, col3 = st.columns([1, 3, 1])
-with col2:
-    search_query = st.text_input(
-        "",
-        placeholder="Search within books..."
-    )
+# Fetch all books
+with st.spinner("Loading books..."):
+    try:
+        books = BooksService.get_all_books()
+    except Exception as e:
+        st.error(f"Failed to load books: {e}")
+        st.stop()
 
-# ---------------- Mock book data (temporary) ----------------
-# This will be replaced by backend logic later
-mock_books = [
-    {"title": "Clean Code", "author": "Robert C. Martin"},
-    {"title": "The Pragmatic Programmer", "author": "Andrew Hunt"},
-    {"title": "Introduction to Algorithms", "author": "CLRS"},
-    {"title": "Design Patterns", "author": "Gamma et al."},
-    {"title": "Structure and Interpretation of Computer Programs", "author": "Sussman"},
-    {"title": "Operating Systems: Three Easy Pieces", "author": "Remzi Arpaci-Dusseau"},
-    {"title": "Computer Networks", "author": "Andrew Tanenbaum"},
-]
-
-# Randomize order every load
-books = random.sample(mock_books, k=len(mock_books))
-
-# Optional client-side filtering
-if search_query:
-    q = search_query.lower()
+# Client-side filtering
+if query:
+    q = query.lower()
     books = [
         b for b in books
-        if q in b["title"].lower() or q in b["author"].lower()
+        if q in b.book_name.lower()
+        or any(q in a.lower() for a in b.authors)
     ]
 
-# ---------------- Book listing ----------------
 st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
+st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
 
-if books:
-    cols_per_row = 3
-    rows = [books[i:i + cols_per_row] for i in range(0, len(books), cols_per_row)]
-
-    for row in rows:
-        cols = st.columns(cols_per_row)
-        for col, book in zip(cols, row):
-            with col:
-                st.markdown(
-                    f"""
-                    <div class="card">
-                        <strong>{book['title']}</strong><br>
-                        <em>{book['author']}</em>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-else:
-    st.markdown(
-        """
-        <div class="card">
-            No books found.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+BookGrid(
+    books,
+    card_cls=ClickableBookCard,
+    key_prefix="browse"
+).render()

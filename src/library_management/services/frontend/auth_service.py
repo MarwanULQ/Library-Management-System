@@ -1,13 +1,15 @@
 from typing import Optional
 from services.frontend.api_helper import ApiHelper
+from models.auth_model import UserRole
 
 class AuthService:
 
     @staticmethod
-    def login(email: str, password: str) -> Optional[str]:
+    def login(email: str, password: str):
         data = {
             "email": email,
-            "password": password
+            "password": password,
+            "role": ""  # Role is not needed for login
         }
 
         try:
@@ -19,13 +21,14 @@ class AuthService:
         if response.status_code != 200:
             raise Exception(f"Login failed: {response.json().get('detail')}")
 
-        return response.json().get("userId")
+        return response.json().get("userId"), response.json().get("role")
 
     @staticmethod
-    def signup(email: str, password: str) -> Optional[str]:
+    def signup(email: str, password: str):
         data = {
             "email": email,
-            "password": password
+            "password": password,
+            "role": UserRole.STUDENT.value  # Default role as Student
         }
 
         try:
@@ -35,12 +38,7 @@ class AuthService:
 
         if response.status_code != 200:
             print(f"Signup failed: {response.json().get('detail')}")
-            return None
+            raise TypeError
 
-        return response.json().get("userId")
-    
-    @staticmethod
-    def logout() -> bool:
-        # TODO: Implement logout functionality if needed
-        return True
+        return response.json().get("userId"), response.json().get("role")
     

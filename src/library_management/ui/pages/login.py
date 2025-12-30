@@ -1,114 +1,116 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent.parent))
 import streamlit as st
+from assets.styles import apply_global_styles
+from services.frontend.auth_service import AuthService
 
-# ---------------- Page config ----------------
-st.set_page_config(
-    page_title="YLibrary | Login",
-    layout="centered",
-    initial_sidebar_state="collapsed"
-)
+class LoginPage():
+    def __init__(self):
+        self._init_session_state()
 
-# ---------------- Dark Styling ----------------
-st.markdown(
-    """
-    <style>
-        .stApp {
-            background-color: #0f172a; /* dark slate */
-            color: #e5e7eb;
-            font-family: "Georgia", "Times New Roman", serif;
+    # ---------- Public API ----------
+    def render(self):
+        apply_global_styles()
+        self._render_header()
+        self._render_choice_buttons()
+        self._render_forms()
+
+    # ---------- Session State ----------
+    def _init_session_state(self):
+        defaults = {
+            "choicef": False,
+            "new": False,
+            "logged_in": False,
         }
+        for key, value in defaults.items():
+            if key not in st.session_state:
+                st.session_state[key] = value
 
-        h1, h2, h3, p {
-            font-family: inherit;
-            color: #e5e7eb;
-        }
+    # ---------- Header ----------
+    def _render_header(self):
+        st.markdown(
+            """
+            <div class="page-title">
+                <span class="accent">Y</span>Library 📚
+            </div>
+            <div class="page-subtitle" style="color:#94a3b8;">
+                Secure access to knowledge and services
+            </div>
+            <div class="custom-divider-center"></div>
+            """,
+            unsafe_allow_html=True
+        )
 
-        .stTextInput > div > div > input {
-            background-color: #1e293b;
-            color: #e5e7eb;
-            border: 1px solid #334155;
-        }
+    # ---------- Choice Buttons ----------
+    def _render_choice_buttons(self):
+        col1, col2 = st.columns(2)
 
-        .stTextInput > div > div > input::placeholder {
-            color: #94a3b8;
-        }
+        with col1:
+            if st.button("Login", key="choose_login", use_container_width=True):
+                st.session_state.choicef = True
+                st.session_state.new = False
 
-        .stButton > button {
-            background-color: #1e293b;
-            color: #e5e7eb;
-            border: 1px solid #334155;
-            font-weight: 700;
-        }
+        with col2:
+            if st.button("Sign Up", key="choose_signup", use_container_width=True):
+                st.session_state.choicef = True
+                st.session_state.new = True
 
-        .stButton > button:hover {
-            background-color: #334155;
-        }
+    # ---------- Forms ----------#
+    def _render_forms(self):
+        if not st.session_state.choicef:
+            return
 
-        hr {
-            border: 1px solid #334155;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+        st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
 
-# ---------------- Session state ----------------
-if "choicef" not in st.session_state:
-    st.session_state.choicef = False
-if "new" not in st.session_state:
-    st.session_state.new = False
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-
-# ---------------- Header ----------------
-st.markdown(
-    """
-    <h1 style="text-align:center;">
-        <span style="color:#2ecc71;">Y</span>Library 📚
-    </h1>
-    <p style="text-align:center; font-style:italic; color:#94a3b8;">
-        Secure access to knowledge and services
-    </p>
-    """,
-    unsafe_allow_html=True
-)
-
-# ---------------- Login / Signup choice ----------------
-col1, col2 = st.columns(2)
-
-with col1:
-    if st.button("Login", key="choose_login", use_container_width=True):
-        st.session_state.choicef = True
-        st.session_state.new = False
-
-with col2:
-    if st.button("Sign Up", key="choose_signup", use_container_width=True):
-        st.session_state.choicef = True
-        st.session_state.new = True
-
-st.markdown("---")
-
-# ---------------- Forms ----------------
-if st.session_state.choicef:
-
-    username = st.text_input("Username")
-
-    if st.session_state.new:
         email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
 
-    password = st.text_input("Password", type="password")
+        action = "Sign Up" if st.session_state.new else "Login"
 
-    action = "Sign Up" if st.session_state.new else "Login"
+        if st.button(
+            action,
+            key="submit_signup" if st.session_state.new else "submit_login",
+            use_container_width=True
+        ):
+            self._handle_submit(email, password)
 
-    if st.button(
-        action,
-        key="submit_signup" if st.session_state.new else "submit_login",
-        use_container_width=True
-    ):
-        if username and password and (not st.session_state.new or "@ejust.edu.eg" in email):
-            st.session_state.logged_in = True
-            st.switch_page("pages/home.py")
-        else:
+        # ---------- Auth Logic ----------
+    def _handle_submit(self, email, password):
+        if not email or not password:
+            st.error("Please fill all fields correctly")
+
+        if st.session_state.new:
             if "@ejust.edu.eg" not in email:
-                st.error("Don't have access to the Uni Library. You should have an E-JUST Email.")
+                st.error(
+                    "Don't have access to the Uni Library. "
+                    "You should have an E-JUST Email."
+                )
+
+        try:
+            if st.session_state.new:
+                pass
+                result = AuthService.signup(email, password)
             else:
-                st.error("Please fill all fields correctly")
+                pass
+                result = AuthService.login(email, password)
+
+            # Save auth state
+            st.session_state.logged_in = True
+            st.session_state.user_id = result[0]
+            st.session_state.email = email
+
+            st.success("Authentication successful!")
+            st.switch_page("pages/home.py")
+
+        except ValueError as e:
+            st.error(str(e))
+        except TypeError as e:
+            st.error("Email already exists")
+        except Exception as e:
+            st.error(str(e))
+
+
+
+page = LoginPage()
+page.render()
