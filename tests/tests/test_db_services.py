@@ -1,46 +1,61 @@
-import pytest
+import unittest
 from sqlmodel import Session, SQLModel, create_engine, select
 from src.library_management.services.database.db import Book, Student, Categories
 
-@pytest.fixture(name="session")
-def session_fixture():
-    engine = create_engine("sqlite:///:memory:")
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
 
-def test_create_and_read_book(session: Session):
-    new_book = Book(
-        book_name="Mastering Python",
-        publication_year=2024,
-        language="Arabic"
-    )
-    session.add(new_book)
-    session.commit()
+class TestDatabaseModels(unittest.TestCase):
 
-    statement = select(Book).where(Book.book_name == "Mastering Python")
-    result = session.exec(statement).first()
+    @classmethod
+    def setUpClass(cls):
+        cls.engine = create_engine("sqlite:///:memory:")
+        SQLModel.metadata.create_all(cls.engine)
 
-    assert result is not None
-    assert result.book_name == "Mastering Python"
-    assert result.language == "Arabic"
+    @classmethod
+    def tearDownClass(cls):
+        SQLModel.metadata.drop_all(cls.engine)
 
-def test_create_student(session: Session):
-    student = Student(
-        full_name="Ali Khamis",
-        email="ali@test.com"
-    )
-    session.add(student)
-    session.commit()
+    def setUp(self):
+        self.session = Session(self.engine)
 
-    statement = select(Student).where(Student.email == "ali@test.com")
-    db_student = session.exec(statement).first()
+    def tearDown(self):
+        self.session.close()
 
-    assert db_student.full_name == "Ali Khamis"
+    def test_create_and_read_book(self):
+        new_book = Book(
+            book_name="Mastering Python",
+            publication_year=2024,
+            language="Arabic"
+        )
+        self.session.add(new_book)
+        self.session.commit()
 
-def test_create_category(session: Session):
-    cat = Categories(category_name="Computer Science")
-    session.add(cat)
-    session.commit()
+        statement = select(Book).where(Book.book_name == "Mastering Python")
+        result = self.session.exec(statement).first()
 
-    assert cat.category_id is not None
+        self.assertIsNotNone(result)
+        self.assertEqual(result.book_name, "Mastering Python")
+        self.assertEqual(result.language, "Arabic")
+
+    def test_create_student(self):
+        student = Student(
+            full_name="Ali Khamis",
+            email="ali@test.com"
+        )
+        self.session.add(student)
+        self.session.commit()
+
+        statement = select(Student).where(Student.email == "ali@test.com")
+        db_student = self.session.exec(statement).first()
+
+        self.assertEqual(db_student.full_name, "Ali Khamis")
+
+    def test_create_category(self):
+        cat = Categories(category_name="Computer Science")
+        self.session.add(cat)
+        self.session.commit()
+
+        self.assertIsNotNone(cat.category_id)
+
+
+if __name__ == "__main__":
+    unittest.main()
