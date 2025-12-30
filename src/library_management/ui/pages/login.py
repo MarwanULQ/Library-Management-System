@@ -5,7 +5,7 @@ import streamlit as st
 from assets.styles import apply_global_styles
 from services.frontend.auth_service import AuthService
 
-class LoginPage:
+class LoginPage():
     def __init__(self):
         self._init_session_state()
 
@@ -79,7 +79,6 @@ class LoginPage:
     def _handle_submit(self, email, password):
         if not email or not password:
             st.error("Please fill all fields correctly")
-            return
 
         if st.session_state.new:
             if "@ejust.edu.eg" not in email:
@@ -87,7 +86,6 @@ class LoginPage:
                     "Don't have access to the Uni Library. "
                     "You should have an E-JUST Email."
                 )
-                return
 
         try:
             if st.session_state.new:
@@ -99,7 +97,7 @@ class LoginPage:
 
             # Save auth state
             st.session_state.logged_in = True
-            st.session_state.user_id = result["userId"]
+            st.session_state.user_id = result[0]
             st.session_state.email = email
 
             st.success("Authentication successful!")
@@ -107,8 +105,8 @@ class LoginPage:
 
         except ValueError as e:
             st.error(str(e))
-        except Exception:
-            st.error("Unable to connect to authentication server.")
+        except Exception as e:
+            st.error(str(e))
 
 
 
