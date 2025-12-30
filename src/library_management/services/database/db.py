@@ -111,11 +111,6 @@ class Categories(SQLModel, table=True):
         link_model=Book_Category
     )
 
-class Location(SQLModel, table=True):
-    __tablename__ = "Location"
-    location_id: Optional[int] = Field(default=None, primary_key=True)
-    shelf: str
-    section: str
 
 class StaffRole(str, Enum):
     Librarian = "Librarian"
@@ -144,7 +139,6 @@ class Copy(SQLModel, table=True):
     __tablename__ = "Copy"
     copy_id: Optional[int] = Field(default=None, primary_key=True)
     book_id: int = Field(foreign_key="Book.book_id")
-    location_id: int = Field(foreign_key="Location.location_id")
     status: CopyStatus
 
     loans: list["Book_Loan"] = Relationship(

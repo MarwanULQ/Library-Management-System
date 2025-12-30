@@ -1,8 +1,8 @@
-from fastapi import FastAPI, Depends, HTTPException, APIRouter, Request
+from fastapi import  Depends, HTTPException, APIRouter, Request
 from sqlalchemy.orm import base
 from sqlmodel import SQLModel, Session, select
 from typing import Optional, List
-from sqlalchemy import func, sql
+from sqlalchemy import Select, func
 from datetime import datetime
 from ..services.database.db import (
     Book,
@@ -30,6 +30,12 @@ class AuthorRead(SQLModel):
     author_id: int
     full_name: str
 
+class AuthorCreate(SQLModel):
+    full_name: str
+
+class CategoryCreate(SQLModel):
+    category_name: str
+
 class CategoryRead(SQLModel):
     category_id: int
     category_name: str
@@ -44,6 +50,40 @@ class BookRead(SQLModel):
     authors: List[AuthorRead] = []
     category: List[CategoryRead] = []
 
+class BookCreate(SQLModel):
+    book_name: str
+    isbn: str | None = None
+    publication_year: int
+    language: str
+    cover: str | None = None
+
+
+@router.post("/authors", response_model=AuthorRead)
+def create_author(name: AuthorCreate, session: Session = Depends(get_session)):
+    author = Authors.model_validate(name)
+    session.add(author)
+    session.commit()
+    session.refresh(author)
+    return author
+
+@router.get("/authors", response_model=list[AuthorRead])
+def list_authors(session: Session = Depends(get_session)):
+    authors = session.exec(select(Authors)).all()
+    return authors
+
+
+@router.post("/categories", response_model=CategoryRead)
+def create_category(name: CategoryCreate, session: Session = Depends(get_session)):
+    category = Categories.model_validate(name)
+    session.add(category)
+    session.commit()
+    session.refresh(category)
+    return category
+
+@router.get("/catagories", response_model=list[CategoryRead])
+def list_categories(session: Session=Depends(get_session)):
+    categories =  session.exec(select(Categories)).all()
+    return categories
 
 @router.get("/books", response_model=list[BookRead])
 def list_books(request: Request, session: Session = Depends(get_session)):
@@ -69,16 +109,9 @@ def get_book(book_id: int, request: Request, session: Session = Depends(get_sess
 
     return book
 
-class BookCreate(SQLModel):
-    book_name: str
-    isbn: str | None = None
-    publication_year: int
-    language: str
-    cover: str | None = None
-
 @router.post("/books", response_model=BookRead)
 def create_book(data: BookCreate, session: Session = Depends(get_session)):
-    book = Book.from_orm(data)
+    book = Book.model_validate(data)
     session.add(book)
     session.commit()
     session.refresh(book)
@@ -109,7 +142,41 @@ def search(q: str,request: Request, session: Session = Depends(get_session)):
 
     return books
 
+@router.patch("/books/{book_id}/authors/{author_id}")
+def add_author_to_book(book_id: int, author_id: int, session: Session=Depends(get_session)):
+    book = session.get(Book, book_id)
+    if not book:
+        raise Exception("Error 404: Book not found")
+    author = session.get(Authors, author_id)
+    if not author:
+        raise Exception("Error 404: Author not found")
 
+    if author in book.authors:
+        return {"Status: author already exists in book"}
+    
+    book.authors.append(author)
+    session.add(book)
+    session.commit()
+    session.refresh(book)
+    return {"Operation Successful: Author added to book"}
+
+@router.patch("/books/{book_id}/categories/{category_id}")
+def add_category_to_book(book_id: int, category_id: int, session: Session=Depends(get_session)):
+    book = session.get(Book, book_id)
+    if not book:
+        raise Exception("Error 404: Book not found")
+    category = session.get(Categories, category_id)
+    if not category:
+        raise Exception("Error 404: Category not found")
+
+    if category in book.category:
+        return {"Status: Category already in book"}
+
+    book.category.append(category)
+    session.add(book)
+    session.commit()
+    session.refresh(book)
+    return {"Operation Successful: Category added to book"}
 
 class StudentModel(SQLModel):
     student_id: int
@@ -126,7 +193,7 @@ def get_student(student_id: int, session: Session = Depends(get_session)):
 
 @router.post("/students", response_model=StudentModel)
 def create_student(data: StudentModel, session: Session = Depends(get_session)):
-    student = Student.from_orm(data)
+    student = Student.model_validate(data)
     session.add(student)
     session.commit()
     session.refresh(student)
@@ -152,7 +219,7 @@ class StaffCreate(SQLModel):
 
 @router.post("/staff", response_model=StaffRead)
 def create_staff(data: StaffCreate, session: Session = Depends(get_session)):
-    staff = Staff.from_orm(data)
+    staff = Staff.model_validate(data)
     session.add(staff)
     session.commit()
     session.refresh(staff)
@@ -185,7 +252,7 @@ class RoomCreate(SQLModel):
 #Added the ability to create rooms for testing
 @router.post("/rooms", response_model=RoomRead)
 def create_room(data: RoomCreate, session: Session = Depends(get_session)):
-    room = Rooms.from_orm(data)
+    room = Rooms.model_validate(data)
     session.add(room)
     session.commit()
     session.refresh(room)
@@ -225,7 +292,7 @@ class ReservationCreate(SQLModel):
 
 @router.post("/room_reservation", response_model=ReservationCreate)
 def create_reservation(data: ReservationCreate, session: Session = Depends(get_session)):
-    reservation = Room_Reservation.from_orm(data)
+    reservation = Room_Reservation.model_validate(data)
     session.add(reservation)
     session.commit()
     session.refresh(reservation)

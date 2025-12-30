@@ -31,15 +31,6 @@ CREATE TABLE Categories (
 );
 
 -- =====================
--- Location
--- =====================
-CREATE TABLE Location (
-    location_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    shelf TEXT NOT NULL,
-    section TEXT NOT NULL
-);
-
--- =====================
 -- Staff
 -- =====================
 CREATE TABLE Staff (
@@ -64,11 +55,9 @@ CREATE TABLE Student (
 CREATE TABLE Copy (
     copy_id INTEGER PRIMARY KEY AUTOINCREMENT,
     book_id INTEGER NOT NULL,
-    location_id INTEGER NOT NULL,
     status TEXT NOT NULL DEFAULT 'Available'
         CHECK (status IN ('Available','Loaned','Lost','Damaged')),
     FOREIGN KEY (book_id) REFERENCES Book(book_id),
-    FOREIGN KEY (location_id) REFERENCES Location(location_id)
 );
 
 -- =====================
