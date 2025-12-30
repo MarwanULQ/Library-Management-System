@@ -1,11 +1,10 @@
 from dataclasses import dataclass
 from enum import Enum
+from models.user_model import User
 
 @dataclass
-class Staff:
+class Staff(User):
     staff_id: int
-    full_name: str
-    email: str
     role: StaffRole
 
     @classmethod
@@ -16,7 +15,7 @@ class Staff:
             email=data.get("email"),
             role=StaffRole(data.get("role"))
         )
-    
+
     def to_json(self) -> dict:
         return {
             "staff_id": self.staff_id,
