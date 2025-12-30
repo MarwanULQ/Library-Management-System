@@ -31,15 +31,6 @@ CREATE TABLE Categories (
 );
 
 -- =====================
--- Location
--- =====================
-CREATE TABLE Location (
-    location_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    shelf TEXT NOT NULL,
-    section TEXT NOT NULL
-);
-
--- =====================
 -- Staff
 -- =====================
 CREATE TABLE Staff (
@@ -64,11 +55,9 @@ CREATE TABLE Student (
 CREATE TABLE Copy (
     copy_id INTEGER PRIMARY KEY AUTOINCREMENT,
     book_id INTEGER NOT NULL,
-    location_id INTEGER NOT NULL,
     status TEXT NOT NULL DEFAULT 'Available'
-        CHECK (status IN ('Available','Loaned','Lost','Damaged')),
-    FOREIGN KEY (book_id) REFERENCES Book(book_id),
-    FOREIGN KEY (location_id) REFERENCES Location(location_id)
+        CHECK (status IN ('Available','Loaned')),
+    FOREIGN KEY (book_id) REFERENCES Book(book_id)
 );
 
 -- =====================
@@ -98,27 +87,19 @@ CREATE TABLE Book_Category (
 -- =====================
 CREATE TABLE Book_Loan (
     loan_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    copy_id INTEGER NOT NULL,
     student_id INTEGER NOT NULL,
     staff_id INTEGER,
     status TEXT NOT NULL DEFAULT 'Pending'
-        CHECK (status IN ('Pending','Approved','Rejected','Active','Returned')),
+        CHECK (status IN ('Pending','Rejected','Active','Returned')),
     created_at TEXT NOT NULL,
     approved_at TEXT,
     returned_at TEXT,
+    FOREIGN KEY (copy_id) REFERENCES Copy(copy_id),
     FOREIGN KEY (student_id) REFERENCES Student(student_id),
     FOREIGN KEY (staff_id) REFERENCES Staff(staff_id)
 );
 
--- =====================
--- Copy ↔ Loan
--- =====================
-CREATE TABLE Copy_Loan (
-    copy_id INTEGER NOT NULL,
-    loan_id INTEGER NOT NULL,
-    PRIMARY KEY (copy_id, loan_id),
-    FOREIGN KEY (copy_id) REFERENCES Copy(copy_id),
-    FOREIGN KEY (loan_id) REFERENCES Book_Loan(loan_id)
-);
 
 -- =====================
 -- Rooms
