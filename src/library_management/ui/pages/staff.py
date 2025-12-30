@@ -127,4 +127,7 @@ class StaffPage:
 
 
 page = StaffPage(db)
-page.render()
+if st.session_state.logged_in == True:
+    page.render()
+else:
+    st.error("You must Log in first to access this page")

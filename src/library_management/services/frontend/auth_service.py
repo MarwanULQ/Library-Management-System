@@ -1,4 +1,3 @@
-from typing import Optional
 from services.frontend.api_helper import ApiHelper
 from models.auth_model import UserRole
 
