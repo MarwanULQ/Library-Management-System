@@ -37,7 +37,9 @@ CREATE TABLE Staff (
     staff_id INTEGER PRIMARY KEY AUTOINCREMENT,
     full_name TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('Librarian', 'Admin')),
-    email TEXT NOT NULL UNIQUE
+    email TEXT NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL UNIQUE,
+    FOREIGN KEY (user_id) REFERENCES Users(id)
 );
 
 -- =====================
@@ -46,7 +48,9 @@ CREATE TABLE Staff (
 CREATE TABLE Student (
     student_id INTEGER PRIMARY KEY AUTOINCREMENT,
     full_name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE
+    email TEXT NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL UNIQUE,
+    FOREIGN KEY (user_id) REFERENCES Users(id)
 );
 
 -- =====================
@@ -120,10 +124,11 @@ CREATE TABLE Room_Reservation (
     staff_id INTEGER,
     status TEXT NOT NULL DEFAULT 'Pending'
         CHECK (status IN ('Pending','Approved','Rejected','Active','Finished')),
+    slot TEXT NOT NULL
+        CHECK (status IN ('Morning', 'Noon', 'Evening')),
+    date TEXT NOT NULL,
     requested_at TEXT NOT NULL,
     approved_at TEXT,
-    start_time TEXT NOT NULL,
-    end_time TEXT NOT NULL,
     FOREIGN KEY (student_id) REFERENCES Student(student_id),
     FOREIGN KEY (room_id) REFERENCES Rooms(room_id),
     FOREIGN KEY (staff_id) REFERENCES Staff(staff_id)
