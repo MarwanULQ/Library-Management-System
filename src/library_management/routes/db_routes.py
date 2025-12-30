@@ -2,7 +2,7 @@ from fastapi import  Depends, HTTPException, APIRouter, Request
 from sqlmodel import SQLModel, Session, select
 from typing import Optional, List
 from sqlalchemy import func
-from datetime import datetime
+from datetime import datetime, date
 from zoneinfo import ZoneInfo
 from ..services.database.db import (
     Book,
@@ -13,6 +13,7 @@ from ..services.database.db import (
     LoanStatus,
     CopyStatus,
     Room_Reservation,
+    RoomSlot,
     StaffRole,
     Student,
     Staff,
@@ -385,10 +386,12 @@ class ReservationRead(SQLModel):
     staff_id: int | None
     room_id: int
     status: RoomStatus
+    slot: RoomSlot
+    date: date
     requested_at: datetime
     approved_at: datetime | None
-    start_time: datetime
-    end_time: datetime 
+
+    model_config = {"from_attributes": True}
 
 @router.get("/room_reservations", response_model=list[ReservationRead])
 def list_reservations(session: Session = Depends(get_session)):
@@ -406,40 +409,122 @@ def get_reservation(reservation_id: int, session: Session = Depends(get_session)
 class ReservationCreate(SQLModel):
     student_id: int
     room_id: int
-    requested_at: datetime
-    start_time: datetime
-    end_time: datetime 
+    slot: RoomSlot
+    date: date
 
 
-@router.post("/room_reservation", response_model=ReservationCreate)
+@router.post("/room_reservation", response_model=ReservationRead)
 def create_reservation(data: ReservationCreate, session: Session = Depends(get_session)):
-    reservation = Room_Reservation.model_validate(data)
+    exists = session.exec(
+        select(Room_Reservation).where(
+            (Room_Reservation.room_id == data.room_id) &
+            (Room_Reservation.slot == data.slot) &
+            (Room_Reservation.date == data.date) &
+            Room_Reservation.status.in_([
+                RoomStatus.Pending,
+                RoomStatus.Approved,
+                RoomStatus.Active
+            ])
+        )
+    ).first()
+
+    if exists:
+        raise HTTPException(status_code=409, detail="Room Booked")
+
+    reservation = Room_Reservation(
+    **data.model_dump(),
+    status=RoomStatus.Pending,
+    requested_at=datetime.now()
+    )
+
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
     return reservation
 
-class ReservationUpdate(SQLModel):
-    status: Optional[str] = None
-    staff_id: Optional[int] = None
-    approved_at: Optional[datetime] = None
-
-@router.patch("/room_reservation/{reservation_id}", response_model=ReservationRead)
-def update_reservation(
-    reservation_id: int,
-    data: ReservationUpdate,
-    session: Session = Depends(get_session)
-):
+@router.patch("/room_reservations/{reservation_id}/approve", response_model=ReservationRead)
+def approve_reservation(reservation_id: int, session: Session = Depends(get_session)):
     reservation = session.get(Room_Reservation, reservation_id)
+
     if not reservation:
         raise HTTPException(status_code=404, detail="Reservation not found")
 
-    update_data = data.dict(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(reservation, key, value)
+    if reservation.status != RoomStatus.Pending:
+        raise HTTPException(409, detail=f"Cannot approve a reservation in '{reservation.status}' state")
+
+    # Defensive double booking safety
+    exists = session.exec(
+        select(Room_Reservation).where(
+            (Room_Reservation.room_id == reservation.room_id) &
+            (Room_Reservation.slot == reservation.slot) &
+            (Room_Reservation.date == reservation.date) &
+            Room_Reservation.status.in_([RoomStatus.Approved, RoomStatus.Active])
+        )
+    ).first()
+
+    if exists:
+        raise HTTPException(409, detail="This room & slot are already reserved for this date")
+
+    reservation.status = RoomStatus.Approved
+    reservation.approved_at = datetime.now()
 
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
+
+    return reservation
+
+@router.patch("/room_reservations/{reservation_id}/reject", response_model=ReservationRead)
+def reject_reservation(reservation_id: int, session: Session = Depends(get_session)):
+    reservation = session.get(Room_Reservation, reservation_id)
+
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+
+    if reservation.status != RoomStatus.Pending:
+        raise HTTPException(409, detail=f"Cannot reject a reservation in '{reservation.status}' state")
+
+    reservation.status = RoomStatus.Rejected
+
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+
+    return reservation
+
+@router.patch("/room_reservations/{reservation_id}/activate", response_model=ReservationRead)
+def activate_reservation(reservation_id: int, session: Session = Depends(get_session)):
+    reservation = session.get(Room_Reservation, reservation_id)
+
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+
+    if reservation.status != RoomStatus.Approved:
+        raise HTTPException(409, detail=f"Cannot activate a reservation in '{reservation.status}' state")
+
+    reservation.status = RoomStatus.Active
+
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+
+    return reservation
+
+@router.patch("/room_reservations/{reservation_id}/complete", response_model=ReservationRead)
+def complete_reservation(reservation_id: int, session: Session = Depends(get_session)):
+    reservation = session.get(Room_Reservation, reservation_id)
+
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+
+    if reservation.status != RoomStatus.Active:
+        raise HTTPException(409, detail=f"Cannot complete a reservation in '{reservation.status}' state")
+
+    reservation.status = RoomStatus.Completed
+
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+
     return reservation
 
