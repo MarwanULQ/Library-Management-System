@@ -102,13 +102,12 @@ class ProfilePage:
 
 
 # ---------- Sample Data ----------
-sample_user = {
-    'name': 'John Doe',
-    'email': 'john@example.com',
-    'member_id': '12345',
-    'join_date': '2023-01-15',
+user = {
+    'name': st.session_state.email.split("@")[0].split(".")[0].capitalize(),
+    'email': st.session_state.email,
+    'member_id': st.session_state.user_id,
     'borrowed_books': []
 }
 
-page = ProfilePage(sample_user)
+page = ProfilePage(user)
 page.render()
