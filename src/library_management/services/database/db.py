@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 import sqlite3
 from enum import Enum
 from pathlib import Path
@@ -172,6 +172,12 @@ class RoomStatus(str, Enum):
     Active = "Active"
     Finished = "Finished"
     
+
+class RoomSlot(str, Enum):
+    Morning = "8:00–10:00"
+    Noon = "10:00–12:00"
+    Evening = "12:00–2:00"
+
 class Room_Reservation(SQLModel, table=True):
     __tablename__ = "Room_Reservation"
     reservation_id: Optional[int] = Field(default=None, primary_key=True)
@@ -179,7 +185,7 @@ class Room_Reservation(SQLModel, table=True):
     staff_id: Optional[int] = Field(default=None, foreign_key="Staff.staff_id")
     room_id: int = Field(foreign_key="Rooms.room_id")
     status: RoomStatus = Field(default=RoomStatus.Pending)
+    slot: RoomSlot
+    date: date
     requested_at: datetime
     approved_at: Optional[datetime] = Field(default=None)
-    start_time: datetime
-    end_time: datetime
