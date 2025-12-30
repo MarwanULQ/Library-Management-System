@@ -56,7 +56,7 @@ class LoginPage():
                 st.session_state.choicef = True
                 st.session_state.new = True
 
-    # ---------- Forms ----------
+    # ---------- Forms ----------#
     def _render_forms(self):
         if not st.session_state.choicef:
             return
@@ -105,6 +105,8 @@ class LoginPage():
 
         except ValueError as e:
             st.error(str(e))
+        except TypeError as e:
+            st.error("Email already exists")
         except Exception as e:
             st.error(str(e))
 

@@ -38,7 +38,7 @@ class AuthService:
 
         if response.status_code != 200:
             print(f"Signup failed: {response.json().get('detail')}")
-            return None
+            raise TypeError
 
         return response.json().get("userId"), response.json().get("role")
     
