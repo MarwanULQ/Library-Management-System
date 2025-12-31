@@ -81,11 +81,16 @@ class ActiveLoansTab:
 
         for loan in active_loans:
             with st.container(border=True):
+                approved_at = (
+                    loan.approved_at.strftime("%Y-%m-%d %H:%M")
+                    if loan.approved_at is not None
+                    else "Not approved yet"
+                )
                 st.markdown(f"""
                 **Loan ID:** {loan.loan_id}  
                 **Student ID:** {loan.student_id}  
                 **Copy ID:** {loan.copy_id}  
-                **Approved At:** {loan.approved_at.strftime("%Y-%m-%d %H:%M")}
+                **Approved At:** {approved_at}
                 """)
 
                 if st.button(
