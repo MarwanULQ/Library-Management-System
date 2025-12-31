@@ -119,6 +119,7 @@ class StaffRole(str, Enum):
 class Staff(SQLModel, table=True):
     __tablename__ = "Staff"
     staff_id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="Users.id")
     full_name: str
     role: StaffRole
     email: str = Field(unique=True)
@@ -126,6 +127,7 @@ class Staff(SQLModel, table=True):
 class Student(SQLModel, table=True):
     __tablename__ = "Student"
     student_id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="Users.id")
     full_name: str
     email: str = Field(unique=True)
 
@@ -189,3 +191,15 @@ class Room_Reservation(SQLModel, table=True):
     date: date
     requested_at: datetime
     approved_at: Optional[datetime] = Field(default=None)
+
+class UserRole(str, Enum):
+    Student = "Student"
+    Staff = "Staff"
+
+class Users(SQLModel, table=True):
+    __tablename__ = "Users"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(unique=True)
+    password_hash: str
+    created_at: datetime
+    role: UserRole

@@ -125,7 +125,7 @@ CREATE TABLE Room_Reservation (
     status TEXT NOT NULL DEFAULT 'Pending'
         CHECK (status IN ('Pending','Approved','Rejected','Active','Finished')),
     slot TEXT NOT NULL
-        CHECK (status IN ('Morning', 'Noon', 'Evening')),
+        CHECK (slot IN ('Morning', 'Noon', 'Evening')),
     date TEXT NOT NULL,
     requested_at TEXT NOT NULL,
     approved_at TEXT,
@@ -141,6 +141,6 @@ CREATE TABLE Users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    role TEXT NOT NULL CHECK (role IN ('Student','Staff')),
-    created_at TEXT
+    created_at TEXT,
+    role TEXT NOT NULL CHECK (role IN ('Student','Staff'))
 )
