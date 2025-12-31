@@ -141,6 +141,11 @@ CREATE TABLE Users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
+<<<<<<< HEAD
     created_at TEXT,
     role TEXT NOT NULL CHECK (role IN ('Student','Staff'))
+=======
+    role TEXT NOT NULL CHECK (role IN ('Student','Staff')),
+    created_at TEXT
+>>>>>>> 8093f69b8e3b9c1a2e445ad57578bd373b48a8c3
 )

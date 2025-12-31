@@ -9,11 +9,13 @@ cachetools==6.2.4
 certifi==2025.11.12
 charset-normalizer==3.4.4
 click==8.3.1
+colorama==0.4.6
 dnspython==2.8.0
 email-validator==2.3.0
 fastapi==0.125.0
 gitdb==4.0.12
 GitPython==3.1.45
+greenlet==3.3.0
 h11==0.16.0
 idna==3.11
 Jinja2==3.1.6
