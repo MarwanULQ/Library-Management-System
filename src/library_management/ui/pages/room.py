@@ -44,56 +44,58 @@ class RoomManager:
         return self.rooms
 
 
+if st.session_state.logged_in:
+
+    apply_global_styles()
+    st.markdown(
+        """
+        <style>
+            /* ===== FIX: form submit button visibility ===== */
+            .stFormSubmitButton > button {
+                background-color: #EEEEEE; 
+                color: white;              /* White text */
+                padding: 10px 24px;        /* Add padding */
+                border-radius: 8px;        /* Rounded corners */
+                font-size: 20px;           /* Larger font */
+                margin: 10px 0px;          /* Add margin */
+            }
+
+            .stFormSubmitButton > button:hover {
+                background-color: #FFFFFF;
+            }
 
 
-apply_global_styles()
-st.markdown(
-    """
-    <style>
-        /* ===== FIX: form submit button visibility ===== */
-        .stFormSubmitButton > button {
-            background-color: #EEEEEE; 
-            color: white;              /* White text */
-            padding: 10px 24px;        /* Add padding */
-            border-radius: 8px;        /* Rounded corners */
-            font-size: 20px;           /* Larger font */
-            margin: 10px 0px;          /* Add margin */
-        }
+            /* ===== Room cards ===== */
+            .room-card {
+                background-color: #E5EAF0;
+                border: 1px solid #4b5563;
+                border-radius: 6px;
+                padding: 18px 20px;
+                margin-bottom: 22px;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            }
 
-        .stFormSubmitButton > button:hover {
-            background-color: #FFFFFF;
-        }
-       
+            .room-title {
+                font-size: 20px;
+                font-weight: 800;
+                margin-bottom: 6px;
+            }
 
-        /* ===== Room cards ===== */
-        .room-card {
-            background-color: #E5EAF0;
-            border: 1px solid #4b5563;
-            border-radius: 6px;
-            padding: 18px 20px;
-            margin-bottom: 22px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
+            .room-meta {
+                font-style: italic;
+                color: #444;
+                margin-bottom: 14px;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-        .room-title {
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 6px;
-        }
-
-        .room-meta {
-            font-style: italic;
-            color: #444;
-            margin-bottom: 14px;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-if "room_manager" not in st.session_state:
-    st.session_state.room_manager = RoomManager()
-manager = st.session_state.room_manager
-RoomHeader().render()
-RoomGrid(manager).render()
-RoomReservationModal(manager).render()
+    if "room_manager" not in st.session_state:
+        st.session_state.room_manager = RoomManager()
+    manager = st.session_state.room_manager
+    RoomHeader().render()
+    RoomGrid(manager).render()
+    RoomReservationModal(manager).render()
+else:
+    st.error("You must Log in to reserve a room")

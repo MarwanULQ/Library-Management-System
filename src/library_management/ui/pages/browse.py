@@ -12,45 +12,49 @@ from ui.components.browse_search_bar import BrowseSearchBar
 from ui.components.book_grid import BookGrid
 from ui.components.book_card_clickable import ClickableBookCard
 
-apply_global_styles()
 
-Header().render()
+if st.session_state.logged_in:
+    apply_global_styles()
 
-# ---------------- Cache ----------------
-cache = Cache()
-CACHE_KEY = "all_books"
+    Header().render()
 
-# ---------------- Search bar ----------------
-search_bar = BrowseSearchBar()
-search_bar.render()
-query = search_bar.value
+    # ---------------- Cache ----------------
+    cache = Cache()
+    CACHE_KEY = "all_books"
 
-# ---------------- Fetch books (cached) ----------------
-with st.spinner("Loading books..."):
-    books = cache.get(CACHE_KEY)
+    # ---------------- Search bar ----------------
+    search_bar = BrowseSearchBar()
+    search_bar.render()
+    query = search_bar.value
 
-    if books is None:
-        try:
-            books = BooksService.get_all_books()
-            cache.set(CACHE_KEY, books)
-        except Exception as e:
-            st.error(f"Failed to load books: {e}")
-            st.stop()
+    # ---------------- Fetch books (cached) ----------------
+    with st.spinner("Loading books..."):
+        books = cache.get(CACHE_KEY)
 
-# ---------------- Client-side filtering ----------------
-if query:
-    q = query.lower()
-    books = [
-        b for b in books
-        if q in b.book_name.lower()
-        or any(q in a.lower() for a in b.authors)
-    ]
+        if books is None:
+            try:
+                books = BooksService.get_all_books()
+                cache.set(CACHE_KEY, books)
+            except Exception as e:
+                st.error(f"Failed to load books: {e}")
+                st.stop()
 
-st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
-st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
+    # ---------------- Client-side filtering ----------------
+    if query:
+        q = query.lower()
+        books = [
+            b for b in books
+            if q in b.book_name.lower()
+            or any(q in a.lower() for a in b.authors)
+        ]
 
-BookGrid(
-    books,
-    card_cls=ClickableBookCard,
-    key_prefix="browse"
-).render()
+    st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
+    st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
+
+    BookGrid(
+        books,
+        card_cls=ClickableBookCard,
+        key_prefix="browse"
+    ).render()
+else:
+    st.error("You should Log in to continue browsing")

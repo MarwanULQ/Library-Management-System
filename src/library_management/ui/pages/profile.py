@@ -4,15 +4,17 @@ from ui.components.profile_header import ProfileHeader
 from ui.components.profile_card import ProfileCard
 from ui.components.profile_tabs import ProfileTabs
 
+if st.session_state.logged_in:
+    user_data = {
+        "name": st.session_state.email.split("@")[0].split(".")[0].capitalize(),
+        "email": st.session_state.email,
+        "student_id": st.session_state.student_id
+    }
 
-user_data = {
-    "name": st.session_state.email.split("@")[0].split(".")[0].capitalize(),
-    "email": st.session_state.email,
-    "student_id": st.session_state.student_id
-}
+    apply_global_styles()
 
-apply_global_styles()
-
-ProfileHeader().render()
-ProfileCard(user_data).render()
-ProfileTabs(user_data).render()
+    ProfileHeader().render()
+    ProfileCard(user_data).render()
+    ProfileTabs(user_data).render()
+else:
+    st.error("You should Log in to access this page")
