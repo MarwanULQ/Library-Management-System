@@ -1,10 +1,8 @@
 import streamlit as st
 import pandas as pd
 from assets.styles import apply_global_styles
-
-apply_global_styles()
-
-
+from ui.components.staff_header import StaffHeader
+from ui.components.staff_tabs import StaffTabs
 class MockDatabase:
     def __init__(self):
         self.room_reservations = pd.DataFrame({
@@ -53,78 +51,6 @@ if "db" not in st.session_state:
 db = st.session_state.db
 
 
-class StaffPage:
-    def __init__(self, db):
-        self.db = db
-
-    def render(self):
-        st.markdown(
-            """
-            <div class="page-title">
-                <span class="accent">S</span>taff Dashboard
-            </div>
-            <div class="custom-divider-center"></div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        tabs = st.tabs(
-            ["🏢 Room Reservations", "📚 Books Borrowed", "✅ Approve Requests"]
-        )
-
-        with tabs[0]:
-            self.show_room_reservations()
-
-        with tabs[1]:
-            self.show_books_borrowed()
-
-        with tabs[2]:
-            self.approve_requests()
-
-    def show_room_reservations(self):
-        st.subheader("Room Reservation Status")
-        reservations = self.db.get_room_reservations()
-
-        if not reservations.empty:
-            st.dataframe(reservations, use_container_width=True)
-        else:
-            st.info("No room reservations found")
-
-    def show_books_borrowed(self):
-        st.subheader("Books Borrowed")
-        borrowed_books = self.db.get_borrowed_books()
-
-        if not borrowed_books.empty:
-            st.dataframe(borrowed_books, use_container_width=True)
-        else:
-            st.info("No books currently borrowed")
-
-    def approve_requests(self):
-        st.subheader("Approve Student Requests")
-        requests = self.db.get_student_requests()
-
-        if requests:
-            for request in requests:
-                st.markdown(
-                    f"""
-                    <div class="card">
-                        <b>Request #{request['id']}</b><br>
-                        {request['details']}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-
-                if st.button(
-                    f"Approve Request {request['id']}",
-                    key=f"approve_{request['id']}"
-                ):
-                    self.db.approve_request(request["id"])
-                    st.success(f"Request {request['id']} approved!")
-                    st.rerun()
-        else:
-            st.info("No requests to approve")
-
-
-page = StaffPage(db)
-page.render()
+apply_global_styles()
+StaffHeader().render()
+StaffTabs(db).render()
