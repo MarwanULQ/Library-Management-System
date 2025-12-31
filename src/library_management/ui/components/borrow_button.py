@@ -19,7 +19,7 @@ class BorrowButton(BaseComponent):
                     student_id=self.student_id,
                     book_id=self.book_id
                 )
-                st.success("Book borrowed successfully.")
+                st.success("Loan created successfully.")
                 st.rerun()
             except Exception as e:
                 st.error(str(e))
