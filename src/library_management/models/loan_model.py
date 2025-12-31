@@ -1,15 +1,28 @@
 from dataclasses import dataclass
 from enum import Enum
 from datetime import datetime
-# class LoanRead(SQLModel):
-#     loan_id: int
-#     student_id: int
-#     copy_id: int
-#     staff_id: int | None
-#     status: LoanStatus 
-#     created_at: datetime
-#     approved_at: datetime | None
-#     returned_at: datetime | None
+
+@dataclass
+class LoanCreate():
+    student_id: int
+    book_id: int
+
+    def to_json(self) -> dict:
+        return {
+            "student_id": self.student_id,
+            "book_id": self.book_id
+        }
+
+class LoanStatus(Enum):
+    Pending = "Pending"
+    Rejected = "Rejected"
+    Active = "Active"
+    Returned = "Returned"
+
+class LoanRequestType(Enum):
+    Accept = "accept"
+    Reject = "reject"
+    Return = "return"
 
 @dataclass
 class Loan:
@@ -47,13 +60,3 @@ class Loan:
             "returned_at": self.returned_at.isoformat() if self.returned_at else None
         }
 
-class LoanStatus(str, Enum):
-    Pending = "Pending"
-    Rejected = "Rejected"
-    Active = "Active"
-    Returned = "Returned"
-
-class LoanRequestType(Enum):
-    Accept = "accept"
-    Reject = "reject"
-    Return = "return"
