@@ -45,7 +45,7 @@ if st.session_state.logged_in:
         books = [
             b for b in books
             if q in b.book_name.lower()
-            or any(q in a.lower() for a in b.authors)
+            or any(q in a.full_name.lower() for a in b.authors)
         ]
 
     st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)

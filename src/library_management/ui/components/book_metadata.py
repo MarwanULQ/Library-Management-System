@@ -9,11 +9,17 @@ class BookMetadata(BaseComponent):
     def render(self):
         borrowed_text = "Yes" if self.borrowed else "No"
 
+        authors = (
+            ", ".join(a.full_name for a in self.book.authors)
+            if self.book.authors
+            else "Unknown author"
+        )
+
         st.markdown(
             f"""
             <h1 style="margin-bottom:10px;">{self.book.book_name}</h1>
             <h3 style="margin-top:0; font-style:italic;">
-                {", ".join(self.book.authors) if self.book.authors else "Unknown author"}
+                {authors}
             </h3>
 
             <div class="custom-divider"></div>

@@ -21,6 +21,6 @@ class ClickableBookCard(BaseBookCard):
             )
 
         if self.book.authors:
-            st.caption(", ".join(self.book.authors))
+            st.caption(", ".join(a.full_name for a in self.book.authors))
         else:
             st.caption("Unknown author")
