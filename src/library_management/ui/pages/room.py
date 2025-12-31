@@ -4,6 +4,9 @@ from ui.components.room_header import RoomHeader
 from ui.components.room_grid import RoomGrid
 from ui.components.room_modal import RoomReservationModal
 
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
 class Room:
     """Represents a single room"""
     def __init__(self, room_id, capacity):

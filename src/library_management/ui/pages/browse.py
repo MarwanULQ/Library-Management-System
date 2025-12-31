@@ -12,6 +12,8 @@ from ui.components.browse_search_bar import BrowseSearchBar
 from ui.components.book_grid import BookGrid
 from ui.components.book_card_clickable import ClickableBookCard
 
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 
 if st.session_state.logged_in:
     apply_global_styles()

@@ -12,6 +12,8 @@ from ui.components.book_cover import BookCover
 from ui.components.book_metadata import BookMetadata
 from ui.components.borrow_button import BorrowButton
 
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 
 if st.session_state.logged_in:
     apply_global_styles()

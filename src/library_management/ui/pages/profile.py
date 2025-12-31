@@ -3,6 +3,8 @@ from assets.styles import apply_global_styles
 from ui.components.profile_header import ProfileHeader
 from ui.components.profile_card import ProfileCard
 from ui.components.profile_tabs import ProfileTabs
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 
 if st.session_state.logged_in:
     user_data = {
