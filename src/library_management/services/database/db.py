@@ -2,10 +2,7 @@ from datetime import datetime, date
 import sqlite3
 from enum import Enum
 from pathlib import Path
-from pydantic.types import T
-from sqlalchemy import engine
-from sqlalchemy.engine.base import OptionEngine
-from sqlmodel import Relationship, SQLModel, create_engine, Field, table
+from sqlmodel import Relationship, SQLModel, create_engine, Field
 from typing import Optional
 
 root = Path(__file__).resolve().parent.parent.parent.parent.parent
@@ -61,11 +58,6 @@ class Book_Category(SQLModel, table=True):
 
     book_id: int = Field(foreign_key="Book.book_id", primary_key=True)
     category_id: int = Field(foreign_key="Categories.category_id", primary_key=True)
-
-class Copy_Loan(SQLModel, table=True):
-    __tablename__ = "Copy_Loan"
-    copy_id: int = Field(foreign_key="Copy.copy_id", primary_key=True)
-    loan_id: int = Field(foreign_key="Book_Loan.loan_id", primary_key=True)
 
 class Book(SQLModel, table=True):
     __tablename__ = "Book"

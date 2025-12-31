@@ -3,12 +3,16 @@ from faker import Faker
 import random
 from datetime import datetime, timedelta
 from pathlib import Path
+from ..password_utils import hash_password
 
 fake = Faker()
 
 root = Path(__file__).resolve().parent.parent.parent.parent.parent
 
 DB_PATH = root / "data" / "library.db"
+
+default_password = "1234"
+hashed_password = hash_password(default_password)
 
 conn = sqlite3.connect(DB_PATH)
 c = conn.cursor()
@@ -28,7 +32,7 @@ staff = []
 for i in range(30):
     students.append((
         fake.unique.email(),
-        "hashed_password",
+        hashed_password,
         datetime.now().isoformat(),
         "Student"
     ))
@@ -36,7 +40,7 @@ for i in range(30):
 for i in range(8):
     staff.append((
         fake.unique.email(),
-        "hashed_password",
+        hashed_password,
         datetime.now().isoformat(),
         "Staff"
     ))
