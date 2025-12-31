@@ -8,10 +8,15 @@ from ui.components.header import Header
 from ui.components.search_bar import SearchBar
 from ui.components.cta_buttons import CTAButtons
 from ui.components.featured_books import FeaturedBooks
+import streamlit as st
 
-apply_global_styles()
 
-Header().render()
-SearchBar().render()
-CTAButtons().render()
-FeaturedBooks().render()
+if st.session_state.logged_in:  
+    apply_global_styles()
+
+    Header().render()
+    SearchBar().render()
+    CTAButtons().render()
+    FeaturedBooks().render()
+else:
+    st.error("You Should Log in to Continue")
