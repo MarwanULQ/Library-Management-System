@@ -142,5 +142,5 @@ CREATE TABLE Users (
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     created_at TEXT,
-    role TEXT NOT NULL CHECK (role IN ('Student','Staff')),
+    role TEXT NOT NULL CHECK (role IN ('Student','Staff'))
 )
