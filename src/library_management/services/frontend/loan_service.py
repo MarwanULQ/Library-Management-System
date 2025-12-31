@@ -45,3 +45,15 @@ class LoanService:
         
         return Loan.from_json(response.json())
     
+    @staticmethod
+    def is_book_borrowed(student_id: int, book_id: int) -> bool:
+        try:
+            response = ApiHelper.get(f"/db/students/{student_id}/books/{book_id}/borrowed")
+        except Exception as e:
+            raise Exception(f"Failed to check borrowed status: {e}")
+
+        if response.status_code != 200:
+            raise Exception(f"Error checking borrowed status: {response.json().get('detail')}")
+
+        data = response.json()
+        return bool(data.get("borrowed", False))
