@@ -12,6 +12,7 @@ from ui.components.book_cover import BookCover
 from ui.components.book_metadata import BookMetadata
 from ui.components.borrow_button import BorrowButton
 
+
 if st.session_state.logged_in:
     apply_global_styles()
 
@@ -47,13 +48,13 @@ if st.session_state.logged_in:
     with st.spinner("Checking loan status..."):
         try:
             loans = LoanService.get_loans()
-        except Exception as e:
-            st.error(f"Failed to fetch loans: {e}")
-            st.stop()
+        except Exception:
+            loans = []
 
-    # ---------------- Determine borrowed state ----------------
+    # ---------------- Determine borrowed state (SIMPLE v1) ----------------
     borrowed = any(
-        loan.book_id == book.book_id and loan.student_id == student_id
+        loan.student_id == student_id
+        and loan.copy_id == book.book_id
         for loan in loans
     )
 

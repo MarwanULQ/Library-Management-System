@@ -208,8 +208,6 @@ def create_loan(book_id: int, student_id: int, session: Session = Depends(get_se
 
     if not copy:
         raise HTTPException("Error 400: No Available copies")
-    #copy.status = "Loaned"
-    #session.add(copy)
 
     loan = Book_Loan(
         student_id= student_id,
@@ -528,3 +526,25 @@ def complete_reservation(reservation_id: int, session: Session = Depends(get_ses
 
     return reservation
 
+
+@router.get("/students/{student_id}/books/{book_id}/borrowed")
+def is_book_borrowed(
+    student_id: int,
+    book_id: int,
+    session: Session = Depends(get_session)
+):
+    active_statuses = ["Pending", "Active"]
+
+    statement = (
+        select(Book_Loan)
+        .join(Copy, Copy.copy_id == Book_Loan.copy_id)
+        .where(
+            (Book_Loan.student_id == student_id) &
+            (Copy.book_id == book_id) &
+            (Book_Loan.status.in_(active_statuses))
+        )
+    )
+
+    loan = session.exec(statement).first()
+
+    return {"borrowed": loan is not None}
