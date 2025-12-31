@@ -2,6 +2,11 @@ from dataclasses import dataclass
 from enum import Enum
 from models.user_model import User
 
+class StaffRole(str, Enum):
+    Librarian = "Librarian"
+    Admin = "Admin"
+
+
 @dataclass
 class Staff(User):
     staff_id: int
@@ -24,6 +29,3 @@ class Staff(User):
             "role": self.role.value
         }
     
-class StaffRole(str, Enum):
-    Librarian = "Librarian"
-    Admin = "Admin"

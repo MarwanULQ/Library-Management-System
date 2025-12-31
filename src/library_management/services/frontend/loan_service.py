@@ -1,6 +1,5 @@
-from models.loan_model import Loan, LoanRequestType
+from models.loan_model import Loan, LoanRequestType, LoanCreate
 from services.frontend.api_helper import ApiHelper
-from datetime import date
 
 class LoanService:
 
@@ -19,12 +18,13 @@ class LoanService:
     
     @staticmethod
     def create_loan(student_id: int, book_id: int) -> Loan:
-        data = {
-            "student_id": student_id,
-            "book_id": book_id}
+        l = LoanCreate(
+            student_id=student_id,
+            book_id=book_id
+        )
         
         try:
-            response = ApiHelper.post("/db/loans", data=data)
+            response = ApiHelper.post("/db/loans", query_params=l.to_json())
         except Exception as e:
             raise Exception(f"Failed to create loan: {e}")  
         

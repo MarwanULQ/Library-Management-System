@@ -6,50 +6,75 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from assets.styles import apply_global_styles
 from services.frontend.books_service import BooksService
+from services.frontend.loan_service import LoanService
 from ui.components.header import Header
 from ui.components.book_cover import BookCover
 from ui.components.book_metadata import BookMetadata
 from ui.components.borrow_button import BorrowButton
 
-apply_global_styles()
 
-# ---------------- Read book_id ----------------
-book_id = st.query_params.get("id")
+if st.session_state.logged_in:
+    apply_global_styles()
 
-if not book_id:
-    st.error("No book selected.")
-    st.stop()
-
-try:
-    book_id = int(book_id)
-except ValueError:
-    st.error("Invalid book ID.")
-    st.stop()
-
-# ---------------- Fetch book ----------------
-with st.spinner("Loading book..."):
-    try:
-        book = BooksService.get_book_by_id(book_id)
-    except Exception as e:
-        st.error(f"Failed to load book: {e}")
+    # ---------------- Auth guard ----------------
+    if "student_id" not in st.session_state:
+        st.error("You must be logged in to borrow books.")
         st.stop()
 
-# ---------------- Borrow state ----------------
-borrow_key = f"borrowed_{book.book_id}"
-if borrow_key not in st.session_state:
-    st.session_state[borrow_key] = False
+    student_id = st.session_state["student_id"]
 
-# ---------------- Header ----------------
-Header().render()
+    # ---------------- Read book_id ----------------
+    book_id = st.query_params.get("id")
 
-# ---------------- Layout ----------------
-st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
+    if not book_id:
+        st.error("No book selected.")
+        st.stop()
 
-left, right = st.columns([1, 2], gap="large")
+    try:
+        book_id = int(book_id)
+    except ValueError:
+        st.error("Invalid book ID.")
+        st.stop()
 
-with left:
-    BookCover(book).render()
+    # ---------------- Fetch book ----------------
+    with st.spinner("Loading book..."):
+        try:
+            book = BooksService.get_book_by_id(book_id)
+        except Exception as e:
+            st.error(f"Failed to load book: {e}")
+            st.stop()
 
-with right:
-    BookMetadata(book, st.session_state[borrow_key]).render()
-    BorrowButton(borrow_key).render()
+    # ---------------- Fetch loans ----------------
+    with st.spinner("Checking loan status..."):
+        try:
+            loans = LoanService.get_loans()
+        except Exception:
+            loans = []
+
+    # ---------------- Determine borrowed state (SIMPLE v1) ----------------
+    borrowed = any(
+        loan.student_id == student_id
+        and loan.copy_id == book.book_id
+        for loan in loans
+    )
+
+    # ---------------- Header ----------------
+    Header().render()
+
+    # ---------------- Layout ----------------
+    st.markdown("<div style='margin-top:40px'></div>", unsafe_allow_html=True)
+
+    left, right = st.columns([1, 2], gap="large")
+
+    with left:
+        BookCover(book).render()
+
+    with right:
+        BookMetadata(book, borrowed).render()
+        BorrowButton(
+            can_borrow=not borrowed,
+            student_id=student_id,
+            book_id=book.book_id
+        ).render()
+else:
+    st.error("You should Log in to view book")

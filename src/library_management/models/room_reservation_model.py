@@ -1,7 +1,25 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 from typing import Optional
+
+class RoomStatus(str, Enum):
+    Pending = "Pending"
+    Approved = "Approved"
+    Rejected = "Rejected"
+    Active = "Active"
+    Finished = "Finished"    
+
+class RoomSlot(str, Enum):
+    Morning = "8:00–10:00"
+    Noon = "10:00–12:00"
+    Evening = "12:00–2:00"
+
+class ReservationUpdateRequestType(Enum):
+    Approve = "approve"
+    Reject = "reject"
+    Activate = "activate"
+    Complete = "complete"
 
 @dataclass
 class RoomReservation:
@@ -42,39 +60,19 @@ class RoomReservation:
             "end_time": self.end_time.isoformat()
         }
     
-class RoomStatus(str, Enum):
-    Pending = "Pending"
-    Approved = "Approved"
-    Rejected = "Rejected"
-    Active = "Active"
-    Finished = "Finished"
+
 
 @dataclass
 class ReservationCreateRequest():
     student_id: int
     room_id: int
-    requested_at: datetime
-    start_time: datetime
-    end_time: datetime 
+    slot: RoomSlot
+    date: date
 
     def to_json(self) -> dict:
         return {
             "student_id": self.student_id,
             "room_id": self.room_id,
-            "requested_at": self.requested_at.isoformat(),
-            "start_time": self.start_time.isoformat(),
-            "end_time": self.end_time.isoformat()
-        }
-    
-@dataclass
-class ReservationUpdateRequest():
-    status: Optional[str] = None
-    staff_id: Optional[int] = None
-    approved_at: Optional[datetime] = None
-
-    def to_json(self) -> dict:
-        return {
-            "status": self.status,
-            "staff_id": self.staff_id,
-            "approved_at": self.approved_at.isoformat() if self.approved_at else None
+            "slot": self.slot.value,
+            "date": self.date.isoformat()
         }
